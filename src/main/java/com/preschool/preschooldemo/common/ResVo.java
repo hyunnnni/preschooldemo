@@ -1,4 +1,4 @@
-package common;
+package com.preschool.preschooldemo.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

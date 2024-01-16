@@ -3,6 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.preschool.preschooldemo.teacher.TeacherMapper">
+    <!--                 원아 관리 페이지 조회                   -->
     <select id="selKidManagement">
         SELECT ikid, iclass, kidnm as kidNm, profile
         from t_kid
@@ -13,10 +14,9 @@
             where state = #{kidCheck}
         </if>
         LIMIT #{startIdx},#{rowCount}
-
     </select>
-    
-    <update id="updKidState">
+    <!--                 원아 재원 상태 / 반 승급 수정                   -->
+    <update id="updKidStateOrClass">
         UPDATE t_kid
         SET <if test="kidCheck > 0">
             iclass = #{kidCheck}
@@ -24,9 +24,40 @@
         <if test = "0 >= kidCheck">
             state = #{kidCheck}
         </if>
-        WHERE
-        <foreach collection="ikids" item="ikid">
-            ikid = #{ikid}
-        </foreach>
+        WHERE ikid in (
+        <foreach collection="ikids" item="ikid" separator=",">
+            #{ikid}
+        </foreach>)
+    </update>
+    <!--          원아 재원 상태 졸업으로 변경 시 부모 계정 삭제 처리에 필요한 부모 pk 조회          -->
+    <select id="SelGraduateParentPk">
+        SELECT distinct iparent
+        FROM t_parent_kid
+        where ikid in (
+        <foreach collection="ikids" item="ikid" separator=",">
+            #{ikid}
+        </foreach>)
+        order by iparent
+    </select>
+    <!--         부모와 연결된 모든 원아 조회          -->
+    <select id="SelGraduateKidPk">
+        SELECT ikid
+        FROM t_parent_kid
+        where iparent = #{iparent}
+    </select>
+    <!--          원아 재원 상태 조회          -->
+    <select id="selStateKid">
+        SELECT state
+        FROM t_kid
+        where ikid in (
+        <foreach collection="ikids" item="ikid" separator=",">
+            #{ikid}
+        </foreach>)
+    </select>
+    <!--           원아 재원 상태 졸업으로 변경 시 부모 계정 삭제 처리             -->
+    <update id="updGraduateKidParent">
+        UPDATE t_parent
+        SET p_is_del = #{pIsDel}
+        WHERE iparent = #{iparent}
     </update>
 </mapper>

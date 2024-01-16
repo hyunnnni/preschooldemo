@@ -1,7 +1,7 @@
-package teacher.model;
+package com.preschool.preschooldemo.teacher.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import common.Const;
+import com.preschool.preschooldemo.common.Const;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -12,15 +12,15 @@ public class SelKidManagementDto {
     private int page;
     @Schema(title = "조회 시 선택하는 반 OR 재원상태 데이터")
     private int kidCheck;
-    @Schema(title = "직급 PK")
-    private int irank;
+    @Schema(title = "등급 PK")
+    private int ilevel;
     @JsonIgnore
     private int startIdx;
     @JsonIgnore
     private int rowCount;
 
     public void setPage(int page) {
-        this.rowCount = Const.KID_MANAGE_ROWCOUNT;
+        this.rowCount = Const.KID_PAR_MANAGE_ROWCOUNT;
         this.startIdx = (page-1)*rowCount;
     }
 }
