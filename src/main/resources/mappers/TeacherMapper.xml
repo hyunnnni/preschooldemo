@@ -60,4 +60,33 @@
         SET pr_is_del = #{prIsDel}
         WHERE iparent = #{iparent}
     </update>
+    <!--           현재 계정이 있는 모든 부모의 정보 조회             -->
+    <select id="selParManagement">
+        SELECT iparent, parent_nm AS parentNm, uid, phone_nb AS phoneNb
+        FROM t_parent
+        where pr_is_del = #{prIsDel}
+        LIMIT #{startIdx}, #{rowCount}
+    </select>
+    <!--           부모 정보 원아 반 별 기준으로 조회             -->
+    <select id="selParManagementClass">
+        SELECT DISTINCT A.iparent, A.parent_nm AS parentNm, A.uid, A.phone_nb AS phoneNb
+        FROM t_parent AS A
+        JOIN t_parent_kid AS B
+        ON A.iparent = B.iparent
+        JOIN t_kid AS C
+        ON B.ikid = C.ikid
+        where A.pr_is_del = #{prIsDel}
+        and C.iclass = #{iclass}
+        LIMIT #{startIdx}, #{rowCount}
+    </select>
+    <!--           해당 부모와 연결이 되어 있는 원아의 이름과 반 조회             -->
+    <select id="selConnectionKid">
+        SELECT B.kid_nm AS kidNm, B.iclass
+        FROM t_parent_kid AS A
+        JOIN t_kid AS B
+        ON A.ikid = B.ikid
+        where A.iparent = #{iparent}
+
+    </select>
+
 </mapper>

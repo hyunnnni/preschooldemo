@@ -11,5 +11,5 @@ public class SelKidNameClass {
     @Schema(title = "원아 이름")
     private String kidNm;
     @Schema(title = "원아 반")
-    private int icalss;
+    private int iclass;
 }

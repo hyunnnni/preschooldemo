@@ -83,6 +83,34 @@ public class TeacherService {
     }
 //-------------------------------- 학부모 관리 페이지 조회 --------------------------------
     public List<SelParManagementVo> getParentManagement (SelParManagementDto dto){
-        return null;
+        List<SelParManagementVo> voList = new ArrayList<>();
+        SelParManagementVo vo = new SelParManagementVo();
+
+        if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
+            vo.setResult(Const.NO_PERMISSION);
+            voList.add(vo);
+            return voList;
+        }
+
+        if(dto.getIclass() > 0){
+            voList = mapper.selParManagementClass(dto);
+        }else if(dto.getIclass() == 0) {
+            voList = mapper.selParManagement(dto);
+        }
+
+        if(voList.size() == 0){
+            vo.setResult(Const.NO_INFORMATION);
+            voList.add(vo);
+            return voList;
+        }
+
+        for(SelParManagementVo vo1 : voList){
+            List<SelKidNameClass> kids = mapper.selConnectionKid(vo1.getIparent());
+            if(kids.size() > 0) {
+                vo1.setKids(kids);
+            }
+        }
+
+        return voList;
     }
 }

@@ -10,10 +10,12 @@ import lombok.Data;
 public class SelParManagementDto {
     @Schema(title = "페이징 시 필요한 데이터")
     private int page;
-    @Schema(title = "조회 시 선택하는 반 OR 재원상태 데이터")
+    @Schema(title = "조회 시 선택하는 반 전체 조회 시 값 필요없음")
     private int iclass;
-    @Schema(title = "등급 PK")
+    @Schema(title = "이 페이지에 접근하는 유저의 등급 PK")
     private int ilevel;
+    @JsonIgnore
+    private int prIsDel= Const.ZERO;
     @JsonIgnore
     private int startIdx;
     @JsonIgnore

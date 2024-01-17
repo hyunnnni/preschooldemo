@@ -1,5 +1,7 @@
 package com.preschool.preschooldemo.teacher.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.preschool.preschooldemo.common.Const;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -17,8 +19,9 @@ public class SelParManagementVo {
     @Schema(title = "학부모 전화번호")
     private String phoneNb;
     @Schema(title = "해당 학부모의 원아 이름과 반 리스트")
-    private List<SelKidNameClass> kid;
+    private List<SelKidNameClass> kids;
     @Schema(title = "실패 응답값")
     private int result;
+
 
 }
