@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Schema(title = "관리자 입장에서 학부모관리 페이지 조회에 필요한 데이터")
-public class selParManagementDto {
+public class SelParManagementDto {
     @Schema(title = "페이징 시 필요한 데이터")
     private int page;
     @Schema(title = "조회 시 선택하는 반 OR 재원상태 데이터")

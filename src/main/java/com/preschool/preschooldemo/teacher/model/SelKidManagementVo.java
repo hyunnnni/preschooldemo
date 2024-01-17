@@ -6,9 +6,9 @@ import lombok.Data;
 @Data
 @Schema(title = "관리자 입장에서 원아관리 페이지 조회 응답 데이터 반/재원상태로도 나눌 수 있음")
 public class SelKidManagementVo {
-    @Schema(title = "원아PK")
+    @Schema(title = "변경을 원하는 원아PK")
     private int ikid;
-    @Schema(title = "반PK")
+    @Schema(title = "카테고리 반PK")
     private int iclass;
     @Schema(title = "원아 이름")
     private String kidNm;

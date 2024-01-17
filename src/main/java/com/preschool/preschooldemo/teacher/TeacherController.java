@@ -42,8 +42,10 @@ public class TeacherController {
     @PatchMapping("/stateorclass")
     @Operation(summary = "원아 재원 상태 / 반 승급 수정", description = """
     리스트 안 result 값이
+    -4 : 연결 부모님 계정 삭제 처리 실패<br>
+    -3 : 원아 상태 수정 실패<br>
     -2 : 관리자 외 계정으로 접근 시 거부 에러<br>
-    -1 : 수정 실패<br>
+    -1 : 원아 상태 수정/ 부모님 연결 계정 삭제 실패<br>
     1 이상 : 수정 성공한 원아의 수""")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "통신 성공"),
@@ -66,7 +68,7 @@ public class TeacherController {
             @ApiResponse(responseCode = "400", description = "요청 오류"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public List<SelParManagementVo> getParentManagement (selParManagementDto dto){
+    public List<SelParManagementVo> getParentManagement (SelParManagementDto dto){
         return service.getParentManagement(dto);
     }
 

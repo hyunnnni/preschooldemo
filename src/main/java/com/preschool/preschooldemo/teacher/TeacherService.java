@@ -65,7 +65,7 @@ public class TeacherService {
                             continue;
                         }
                         pDto.setIparent(parent);
-                        pDto.setPIsDel(Const.FAKE_IS_DEL);
+                        pDto.setPrIsDel(Const.FAKE_IS_DEL);
                         delResult = mapper.updGraduateKidParent(pDto);
                         if (delResult == Const.ZERO) {
                             return new ResVo(Const.UPD_IS_DEL_FAIL);
@@ -82,7 +82,7 @@ public class TeacherService {
             return new ResVo(Const.FAIL);
     }
 //-------------------------------- 학부모 관리 페이지 조회 --------------------------------
-    public List<SelParManagementVo> getParentManagement (selParManagementDto dto){
+    public List<SelParManagementVo> getParentManagement (SelParManagementDto dto){
         return null;
     }
 }

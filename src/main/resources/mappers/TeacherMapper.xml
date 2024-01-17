@@ -5,7 +5,7 @@
 <mapper namespace="com.preschool.preschooldemo.teacher.TeacherMapper">
     <!--                 원아 관리 페이지 조회                   -->
     <select id="selKidManagement">
-        SELECT ikid, iclass, kidnm as kidNm, profile
+        SELECT ikid, iclass, kid_nm as kidNm, profile
         from t_kid
         <if test="kidCheck > 0">
             where iclass = #{kidCheck}
@@ -57,7 +57,7 @@
     <!--           원아 재원 상태 졸업으로 변경 시 부모 계정 삭제 처리             -->
     <update id="updGraduateKidParent">
         UPDATE t_parent
-        SET p_is_del = #{pIsDel}
+        SET pr_is_del = #{prIsDel}
         WHERE iparent = #{iparent}
     </update>
 </mapper>
