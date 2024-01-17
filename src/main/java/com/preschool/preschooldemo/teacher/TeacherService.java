@@ -113,4 +113,14 @@ public class TeacherService {
 
         return voList;
     }
+
+//-------------------------------- 학부모 관리 페이지 조회 --------------------------------
+
+    public ResVo delParent(DelParentDto dto){
+        if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
+            return new ResVo(Const.NO_PERMISSION);
+        }
+return null;
+    }
+
 }
