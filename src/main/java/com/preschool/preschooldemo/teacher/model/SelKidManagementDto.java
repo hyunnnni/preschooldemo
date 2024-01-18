@@ -20,7 +20,7 @@ public class SelKidManagementDto {
     private int rowCount;
 
     public void setPage(int page) {
-        this.rowCount = Const.KID_PAR_MANAGE_ROWCOUNT;
+        this.rowCount = Const.PAGE_ROWCOUNT;
         this.startIdx = (page-1)*rowCount;
     }
 }

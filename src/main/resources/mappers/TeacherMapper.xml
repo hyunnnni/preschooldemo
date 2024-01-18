@@ -54,8 +54,8 @@
             #{ikid}
         </foreach>)
     </select>
-    <!--           원아 재원 상태 졸업으로 변경 시 부모 계정 삭제 처리             -->
-    <update id="updGraduateKidParent">
+    <!--           원아 졸업 시 부모 계정 삭제 처리             -->
+    <update id="updStateIsDelParent">
         UPDATE t_parent
         SET pr_is_del = #{prIsDel}
         WHERE iparent = #{iparent}
@@ -86,7 +86,30 @@
         JOIN t_kid AS B
         ON A.ikid = B.ikid
         where A.iparent = #{iparent}
-
     </select>
+    <!--           해당 부모와 연결된 원아들과 연결 끊기             -->
+    <delete id="delParDisconnectKid">
+        DELETE
+        FROM t_parent_kid
+        WHERE iparent in (
+        <foreach collection="iparents" item="iparent" separator=",">
+            #{iparent}
+        </foreach>)
+    </delete>
+    <!--           부모 계정 삭제 처리             -->
+    <update id="updIsDelParent">
+        UPDATE t_parent
+        SET pr_is_del = #{prIsDel}
+        WHERE iparent in (
+        <foreach collection="iparents" item="iparent" separator=",">
+            #{iparent}
+        </foreach>)
+    </update>
+    <!--           학부모와 원아 연결 끊기             -->
+    <delete id="delDisconnent">
+        DELETE
+        FROM t_parent_kid
+        WHERE iparent = #{iparent} AND ikid = #{ikid}
+    </delete>
 
 </mapper>

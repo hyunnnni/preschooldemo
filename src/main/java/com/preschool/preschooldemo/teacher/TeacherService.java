@@ -48,7 +48,7 @@ public class TeacherService {
             }
 
             int result = mapper.updKidStateOrClass(dto);
-            UpdKidStateParentProc pDto = new UpdKidStateParentProc();
+            DelStateParentIsProc pDto = new DelStateParentIsProc();
             int delResult = Const.RESULT;
 
             if(dto.getKidCheck() == Const.STATE_GRADUATE || dto.getKidCheck() == Const.STATE_DROP_OUT) {
@@ -65,8 +65,7 @@ public class TeacherService {
                             continue;
                         }
                         pDto.setIparent(parent);
-                        pDto.setPrIsDel(Const.FAKE_IS_DEL);
-                        delResult = mapper.updGraduateKidParent(pDto);
+                        delResult = mapper.updStateIsDelParent(pDto);
                         if (delResult == Const.ZERO) {
                             return new ResVo(Const.UPD_IS_DEL_FAIL);
                         }
@@ -114,13 +113,42 @@ public class TeacherService {
         return voList;
     }
 
-//-------------------------------- 학부모 관리 페이지 조회 --------------------------------
+//-------------------------------- 학부모 정보 관리자가 삭제 --------------------------------
 
     public ResVo delParent(DelParentDto dto){
+
         if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
             return new ResVo(Const.NO_PERMISSION);
         }
-return null;
+
+        int delResult = mapper.delParDisconnectKid(dto.getIparents());
+        if (delResult == 0){
+            return new ResVo(Const.UPD_IS_DEL_FAIL);
+        }
+        int isDelResult = mapper.updIsDelParent(dto);
+        if (isDelResult == 0){
+            return new ResVo(Const.UPD_IS_DEL_FAIL);
+        }
+
+        return new ResVo(isDelResult);
     }
+
+//-------------------------------- 학부모와 원아 연결 끊기  --------------------------------
+
+    public ResVo delDisconnect(DelDisconnectDto dto){
+
+        if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
+            return new ResVo(Const.NO_PERMISSION);
+        }
+
+        int result = mapper.delDisconnent(dto);
+
+        if(result == 0){
+            return new ResVo(Const.FAIL);
+        }
+
+        return new ResVo(result);
+    }
+
 
 }

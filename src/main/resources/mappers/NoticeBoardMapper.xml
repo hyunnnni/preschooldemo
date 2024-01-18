@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.preschool.preschooldemo.noticeboard.NoticeBoardMapper">
+    <select id="selAllNoticeBoardPar">
+        SELECT A.inotice, A.notice_title, A.notice_contents, B.kid_nm, B.iclass, A.created_at
+        FROM t_notice_board AS A
+        JOIN t_kid AS B
+        ON A.ikid = B.ikid
+        JOIN t_parent_kid AS C
+        ON B.ikid = C.ikid
+        JOIN t_parent AS D
+        ON C.iparent = D.iparent
+        WHERE D.iparent = #{loginedIuser}
+        <if test="ikid > 0">
+            AND c.ikid = ikid;
+        </if>
+        <if test="year != null">
+            AND year(A.created_at) = #{year}
+        </if>
+        ORDER BY A.created_at DESC
+        LIMIT #{startIdx}, #{rowCount}
+    </select>
+
+    <select id="selAllNoticeBoardTea">
+        SELECT A.inotice, A.notice_title, A.notice_contents, B.kid_nm, B.iclass, A.created_at
+        FROM t_notice_board AS A
+        JOIN t_kid AS B
+        ON A.ikid = B.ikid
+        <if test="iclass > 0">
+            WHERE B.iclass = #{iclass}
+        </if>
+        <if test="iclass == 0">
+            WHERE B.state = #{iclass}
+        </if>
+        <if test="year != null">
+            AND year(A.created_at) = #{year}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{startIdx}, #{rowCount}
+    </select>
+
+    <select id="selNoticeBoardPicCheck">
+        SELECT inotice_pic
+        FROM t_notice_pics
+        WHERE inotice = #{inotice}
+    </select>
+</mapper>
