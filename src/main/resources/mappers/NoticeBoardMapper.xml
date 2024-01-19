@@ -3,8 +3,10 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.preschool.preschooldemo.noticeboard.NoticeBoardMapper">
+    <!--                 학부모 유저 시점 원아 알림장 전체 조회                  -->
     <select id="selAllNoticeBoardPar">
-        SELECT A.inotice, A.notice_title, A.notice_contents, B.kid_nm, B.iclass, A.created_at
+        SELECT A.inotice, A.notice_title AS noticeTitle, A.notice_contents AS noticeContents, B.kid_nm AS kidNm,
+        B.iclass, A.created_at AS createdAt
         FROM t_notice_board AS A
         JOIN t_kid AS B
         ON A.ikid = B.ikid
@@ -14,7 +16,7 @@
         ON C.iparent = D.iparent
         WHERE D.iparent = #{loginedIuser}
         <if test="ikid > 0">
-            AND c.ikid = ikid;
+            AND c.ikid = #{ikid}
         </if>
         <if test="year != null">
             AND year(A.created_at) = #{year}
@@ -22,9 +24,10 @@
         ORDER BY A.created_at DESC
         LIMIT #{startIdx}, #{rowCount}
     </select>
-
+    <!--                 선생님 유저 시점 원아 알림장 전체 조회                  -->
     <select id="selAllNoticeBoardTea">
-        SELECT A.inotice, A.notice_title, A.notice_contents, B.kid_nm, B.iclass, A.created_at
+        SELECT A.inotice, A.notice_title AS noticeTitle, A.notice_contents AS noticeContents,
+        B.kid_nm AS kidNm, B.iclass, A.created_at AS createdAt
         FROM t_notice_board AS A
         JOIN t_kid AS B
         ON A.ikid = B.ikid
@@ -37,13 +40,33 @@
         <if test="year != null">
             AND year(A.created_at) = #{year}
         </if>
-        ORDER BY created_at DESC
+        ORDER BY A.created_at DESC
         LIMIT #{startIdx}, #{rowCount}
     </select>
-
+    <!--                 알림장 전체 조회 시 해당 알림장의 사진 유/무 체크                  -->
     <select id="selNoticeBoardPicCheck">
-        SELECT inotice_pic
+        SELECT COUNT(inotice_pic)
         FROM t_notice_pics
         WHERE inotice = #{inotice}
     </select>
+
+    <!--                 알림장 상세 조회                  -->
+    <select id="selNoticeDetail">
+        SELECT A.inotice, A.notice_title AS noticeTitle, A.notice_contents AS noticeContents
+        , A.created_at AS createdAt, B.kid_nm AS kidNm, B.iclass
+        FROM t_notice_board AS A
+        JOIN t_kid AS B
+        ON A.ikid = B.ikid
+        WHERE A.inotice = #{inotice}
+    </select>
+
+    <select id="selNoticeDetailCon">
+        SELECT inotice_comment AS inoticeComment, notice_comment AS noticeComment,
+
+    </select>
+
+    <select id="selNoticeDetailPis">
+
+    </select>
+    
 </mapper>

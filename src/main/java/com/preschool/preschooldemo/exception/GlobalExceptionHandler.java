@@ -2,17 +2,18 @@ package com.preschool.preschooldemo.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {//예외를 잡아주는 controller
-    //AOP : 로그 찍을 때 또는 예외처리, 트랜잭션에 많이 쓰는 편
-    // 관점지향 프로그래밍(중복되는 코드들을 정리?해주는 방식 :단순 메소드 호출이 아닌 마치 그 코드가 적힌 거 처럼 그 부분이 실행이 된다 )
-    //filter: 튕겨내야할 때 /로그인 등등
-    //interceptor :
+public class GlobalExceptionHandler{//예외를 잡아주는 controller
+
 
     @ExceptionHandler(IllegalCallerException.class)
     public ResponseEntity<Object> handleIllegalArgument(IllegalArgumentException e){
@@ -30,6 +31,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {//�
     public ResponseEntity<Object> handlerestApiException(RestApiException e){
         log.warn("handlerestApiException", e);
         return handleExceptionInternal(e.getErrorCode());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)//Valid를 사용한 부분에서 정해놓은 거 외에 값이 들어와 에러가 발생했을 때의 메소드
+    public ResponseEntity<Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException e){
+        log.warn("handleMethodArgumentNotValidException", e);
+
+        List<String> errors = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(lfe -> lfe.getDefaultMessage())
+                .collect(Collectors.toList());
+
+
+        String errStr = "["+String.join( ", " , errors)+"]";
+        return handleExceptionInternal(CommonErrorCode.INVALID_PARAMETER, errors.toString());
     }
 
     private ResponseEntity<Object> handleExceptionInternal(ErrorCode errorCode){

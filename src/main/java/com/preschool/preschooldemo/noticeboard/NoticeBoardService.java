@@ -3,6 +3,7 @@ package com.preschool.preschooldemo.noticeboard;
 import com.preschool.preschooldemo.common.Const;
 import com.preschool.preschooldemo.noticeboard.model.SelAllNoticeDto;
 import com.preschool.preschooldemo.noticeboard.model.SelAllNoticeVo;
+import com.preschool.preschooldemo.noticeboard.model.SelDetailNoticeVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -44,5 +45,8 @@ public class NoticeBoardService {
         return voList;
     }
 
-
+//-------------------------------- 알림장 상세 조회 --------------------------------
+    public SelDetailNoticeVo getDetailNotice(int inotice){
+return null;
+    }
 }
