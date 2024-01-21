@@ -3,12 +3,12 @@ package com.preschool.preschooldemo.noticeboard;
 import com.preschool.preschooldemo.noticeboard.model.SelAllNoticeDto;
 import com.preschool.preschooldemo.noticeboard.model.SelAllNoticeVo;
 import com.preschool.preschooldemo.noticeboard.model.SelDetailNoticeVo;
+import com.preschool.preschooldemo.noticeboard.model.SelDetailNoticeDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,8 +56,8 @@ public class NoticeBoardController {
             @ApiResponse(responseCode = "400", description = "요청 오류"),
             @ApiResponse(responseCode = "500", description = "서버 오류")
     })
-    public SelDetailNoticeVo getDetailNotice(@Valid @Min(value = 0, message = "해당 알림장의 pk가 잘못됨") int inotice){
-        return service.getDetailNotice(inotice);
+    public SelDetailNoticeVo getDetailNotice(@Valid SelDetailNoticeDto dto){
+        return service.getDetailNotice(dto);
     }
 
 
