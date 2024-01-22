@@ -17,7 +17,7 @@ public interface NoticeBoardMapper {
 
     
 //------------------------ 알림장 상세 조회 ------------------------
-    List<SelDetailNoticeVo> selNoticeDetail(int inotice);
+    SelDetailNoticeVo selNoticeDetail(int inotice);
 //------------------------ 알림장 댓글 정보 조회 ------------------------
     List<SelNoticeComment> selNoticeDetailCom(int inotice);
 //------------------------ 알림장 작성자 pk로 이름 조회(관리자) ------------------------
@@ -25,5 +25,9 @@ public interface NoticeBoardMapper {
 //------------------------ 알림장 작성자 pk로 이름 조회(부모님) ------------------------
     SelNoticeCommentProc selNoticeDetailPar (int iparent);
 //------------------------ 알림장 사진 조회 ------------------------
-    List<String> selNoticeDetailPis(int inotice);
+    List<String> selNoticeDetailPics(int notice);
+//-------------------------------- 알림장 댓글 등록 --------------------------------
+    int insNoticeComment (InsNoticeCommentDto dto);
+//-------------------------------- 알림장 댓글 삭제 --------------------------------
+    int delNoticeComment (DelNoticeCommentDto dto);
 }

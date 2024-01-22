@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 15MB
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/preschool
@@ -17,3 +21,6 @@ server:
 
 fcm:
   certification: serviceAccountKey.json
+
+file:
+  dir: D:/download/greengram4/

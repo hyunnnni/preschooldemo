@@ -6,6 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
+@Schema(title = "알림장 상세 조회 응답 데이터")
 public class SelDetailNoticeVo {
     @Schema(title = "알림장 PK")
     private int inotice;
@@ -16,7 +17,7 @@ public class SelDetailNoticeVo {
     @Schema(title = "알림장 사진")
     private List<String> pics;
     @Schema(title = "알림장 댓글")
-    private List<SelNoticeComment> comments;
+    private List<SelNoticeCommentProc> comments;
     @Schema(title = "알림장 업로드일")
     private String createdAt;
     @Schema(title = "알림장을 받는 아이 이름")

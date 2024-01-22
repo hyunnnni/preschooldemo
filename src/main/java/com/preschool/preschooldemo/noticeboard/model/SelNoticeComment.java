@@ -6,7 +6,7 @@ import lombok.Data;
 public class SelNoticeComment {
     private int inoticeComment;
     private String noticeComment;
-    private String iteacher;
-    private String iparent;
+    private int iteacher;
+    private int iparent;
     private String createdAt;
 }
