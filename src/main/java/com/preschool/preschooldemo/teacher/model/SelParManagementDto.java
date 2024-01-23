@@ -14,11 +14,10 @@ public class SelParManagementDto {
     private int iclass;
     @Schema(title = "이 페이지에 접근하는 유저의 등급 PK")
     private int ilevel;
-    @JsonIgnore
+    @Schema(title = "현재 재원중인 원아의 가족 계정만 조회하기 위한 값")
     private int prIsDel= Const.ZERO;
-    @JsonIgnore
+
     private int startIdx;
-    @JsonIgnore
     private int rowCount;
 
     public void setPage(int page) {

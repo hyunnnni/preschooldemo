@@ -19,6 +19,8 @@ public class UpdKidStateDto {
     @NotBlank(message = "접근 유저의 등급을 넣으세요")
     private int ilevel;
     @Schema(title = "원아의 재원상태 OR 원아 승급 반")
-    @Range(min = )
+    @NotBlank(message = "원하는 재원상태 OR 반을 선택해주세요")
+    @Range(min = Const.STATE_DROP_OUT, max = Const.CLASS_GENERAL,
+            message = "원하는 재원상태 OR 반을 선택해주세요")
     private int kidCheck;
 }

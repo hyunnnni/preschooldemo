@@ -22,12 +22,6 @@ public class TeacherService {
             List<SelKidManagementVo> voList = new ArrayList<>();
             SelKidManagementVo vo = new SelKidManagementVo();
 
-            if(!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)){
-                vo.setResult(Const.NO_PERMISSION);
-                voList.add(vo);
-                return voList;
-            }
-
             voList = mapper.selKidManagement(dto);
 
             if(voList.size() > 0){
@@ -42,10 +36,6 @@ public class TeacherService {
     }
 //-------------------------------- 원아 재원 상태 / 반 승급 수정 --------------------------------
     public ResVo patchKidStateOrClass (UpdKidStateDto dto){
-
-            if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
-                return new ResVo(Const.NO_PERMISSION);
-            }
 
             int result = mapper.updKidStateOrClass(dto);
             DelStateParentIsProc pDto = new DelStateParentIsProc();
@@ -82,14 +72,9 @@ public class TeacherService {
     }
 //-------------------------------- 학부모 관리 페이지 조회 --------------------------------
     public List<SelParManagementVo> getParentManagement (SelParManagementDto dto){
+
         List<SelParManagementVo> voList = new ArrayList<>();
         SelParManagementVo vo = new SelParManagementVo();
-
-        if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
-            vo.setResult(Const.NO_PERMISSION);
-            voList.add(vo);
-            return voList;
-        }
 
         if(dto.getIclass() > 0){
             voList = mapper.selParManagementClass(dto);
@@ -116,10 +101,6 @@ public class TeacherService {
 //-------------------------------- 학부모 정보 관리자가 삭제 --------------------------------
 
     public ResVo delParent(DelParentDto dto){
-
-        if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
-            return new ResVo(Const.NO_PERMISSION);
-        }
 
         int delResult = mapper.delParDisconnectKid(dto.getIparents());
         if (delResult == 0){
