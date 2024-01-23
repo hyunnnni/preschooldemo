@@ -24,3 +24,7 @@ fcm:
 
 file:
   dir: D:/download/greengram4/
+
+logging:
+  level:
+    -com.preschool.preschooldemo: info
