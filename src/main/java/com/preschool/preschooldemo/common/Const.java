@@ -4,7 +4,7 @@ package com.preschool.preschooldemo.common;
 
 public class Const {
 
-    public static final int PARENT = 1; //관리자 선생님 PK
+    public static final int PARENT = 1; //학부모 PK
     public static final int TEACHER = 2; //관리자 선생님 PK
     public static final int BOSS = 3; //관리자 원장님 PK
     public static final int RESULT = 100; // INT 초기화 시 넣을 더미 값

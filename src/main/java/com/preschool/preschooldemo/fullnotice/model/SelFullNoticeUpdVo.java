@@ -27,6 +27,4 @@ public class SelFullNoticeUpdVo {
     private int fullNoticeFix;
     @Schema(title = "유치원 소식 사진")
     private List<String> fullPic;
-    @Schema(title = "실패 응답값")
-    private int result;
 }

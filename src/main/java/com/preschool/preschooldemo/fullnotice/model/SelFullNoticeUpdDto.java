@@ -1,5 +1,6 @@
 package com.preschool.preschooldemo.fullnotice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -8,6 +9,6 @@ import lombok.Data;
 public class SelFullNoticeUpdDto {
     @Schema(title = "유치원 소식 pk")
     private int ifullNotice;
-    @Schema(title = "요청한 유저의 등급 pk")
+    @JsonIgnore
     private int ilevel;
 }

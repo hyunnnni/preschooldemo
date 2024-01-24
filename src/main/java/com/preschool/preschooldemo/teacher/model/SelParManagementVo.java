@@ -20,8 +20,6 @@ public class SelParManagementVo {
     private String phoneNb;
     @Schema(title = "해당 학부모의 원아 이름과 반 리스트")
     private List<SelKidNameClass> kids;
-    @Schema(title = "실패 응답값")
-    private int result;
 
 
 }

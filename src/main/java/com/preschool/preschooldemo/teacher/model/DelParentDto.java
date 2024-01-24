@@ -17,9 +17,7 @@ public class DelParentDto {
     @Schema(title = "학부모PK(여러 개 선택가능)")
     @NotBlank(message = "학부모를 선택해주세요")
     private List<Integer> iparents;
-    @Schema(title = "이 페이지에 접근하는 유저의 등급 PK")
-    @Range(min = Const.TEACHER, max = Const.BOSS, message = "접근할 권한이 없습니다")
-    @NotBlank(message = "접근할 권한이 없습니다")
+    @JsonIgnore
     private int ilevel;
     @JsonIgnore
     @Schema(title = "삭제 처리")

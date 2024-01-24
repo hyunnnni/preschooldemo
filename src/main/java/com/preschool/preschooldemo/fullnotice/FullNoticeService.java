@@ -4,7 +4,11 @@ import com.google.firestore.v1.StructuredAggregationQuery;
 import com.preschool.preschooldemo.common.Const;
 import com.preschool.preschooldemo.common.MyFileUtils;
 import com.preschool.preschooldemo.common.ResVo;
+import com.preschool.preschooldemo.exception.AuthErrorCode;
+import com.preschool.preschooldemo.exception.CommonErrorCode;
+import com.preschool.preschooldemo.exception.RestApiException;
 import com.preschool.preschooldemo.fullnotice.model.*;
+import com.preschool.preschooldemo.security.AuthenticationFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -18,128 +22,171 @@ import java.util.List;
 public class FullNoticeService {
     private final FullNoticeMapper mapper;
     private final MyFileUtils mfu;
+    private final AuthenticationFacade authenticationFacade;
 
 //-------------------------------- 유치원 소식 작성 --------------------------------
 
     public ResVo postFullNotice (InsFullNoticeDto dto){
+        try {
+            int level = authenticationFacade.getLevelPk();
+            dto.setIlevel(level);
 
-        Integer fix = mapper.selNoticeFix(dto.getIfullNotice());
+            if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
+                throw new RestApiException(AuthErrorCode.NO_PERMISSION);
+            }
 
-        if (fix >= 3 && dto.getFullNoticeFix() == 1){
-            return new ResVo(Const.FIX_MAX);
+            Integer fix = mapper.selNoticeFix(dto.getIfullNotice());
+
+            if (fix >= 3 && dto.getFullNoticeFix() == 1) {
+                throw new RestApiException(AuthErrorCode.OVER_FIX_NOTICE);
+            }
+
+            int result = mapper.insFullNotice(dto);
+            InsFullPicsDto pdto = new InsFullPicsDto();
+
+            if (result == 0) {
+                throw new RestApiException(AuthErrorCode.FAIL);
+            }
+            if (dto.getFullPic() == null) {
+                return new ResVo(Const.SUCCESS);
+            }
+            pdto.setIfullNotice(dto.getIfullNotice());
+            String target = "/fullnotice/" + dto.getIfullNotice();
+
+            for (MultipartFile file : dto.getFullPic()) {
+                String saverFileNm = mfu.transferTo(file, target);
+                pdto.getFullPic().add(saverFileNm);
+            }
+
+            int picResult = mapper.insFullNoticePics(pdto);
+
+            if (picResult < 1) {
+                throw new RestApiException(AuthErrorCode.PICS_FAIL);
+            }
+            return new ResVo(dto.getIfullNotice());
+        }catch (Exception e){
+            throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
         }
-
-        int result = mapper.postFullNotice(dto);
-        InsFullPicsDto pdto = new InsFullPicsDto();
-
-        if(result == 0){
-            return new ResVo(Const.FAIL);
-        }
-        if(dto.getFullPic()== null){
-            return new ResVo(Const.SUCCESS);
-        }
-        pdto.setIfullNotice(dto.getIfullNotice());
-        String target = "/fullnotice/" + dto.getIfullNotice();
-
-        for(MultipartFile file : dto.getFullPic()){
-            String saverFileNm = mfu.transferTo(file, target);
-            pdto.getFullPic().add(saverFileNm);
-        }
-
-        int picResult = mapper.postFullNoticePics(pdto);
-
-        if (picResult < 1){
-            return new ResVo(Const.PICS_FAIL);
-        }
-        return new ResVo(dto.getIfullNotice());
     }
 
 //-------------------------------- 유치원 소식 삭제 --------------------------------
 
     public ResVo delFullNotice(DelFullNoticeDto dto){
 
-        if(dto.getIlevel() == 2) {
-            Integer writer = mapper.selFullNoticeWriter(dto.getIfullNotice());
+        try {
+            int level = authenticationFacade.getLevelPk();
+            dto.setIlevel(level);
 
-            if (writer == null || writer != dto.getIteacher()){
-                return new ResVo(Const.BAD_PARAMETER);
+            if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
+                throw new RestApiException(AuthErrorCode.NO_PERMISSION);
             }
-        }
-        int result = mapper.delFullNoticePics(dto);
 
-        if (result == 0){
-            return new ResVo(Const.PICS_FAIL);
-        }
+            if (dto.getIlevel() == 2) {
+                Integer writer = mapper.selFullNoticeWriter(dto.getIfullNotice());
 
-        int result1 = mapper.delFullNotice(dto);
+                if (writer == null || writer != dto.getIteacher()) {
+                    throw new RestApiException(CommonErrorCode.INVALID_PARAMETER);
+                }
+            }
+            int result = mapper.delFullNoticePics(dto);
 
-        if (result1 == 0){
-            return new ResVo(Const.FAIL);
+            if (result == 0) {
+                throw new RestApiException(AuthErrorCode.PICS_FAIL);
+            }
+
+            int result1 = mapper.delFullNotice(dto);
+
+            if (result1 == 0) {
+                throw new RestApiException(AuthErrorCode.FAIL);
+            }
+            return new ResVo(Const.SUCCESS);
+
+        }catch (Exception e){
+            throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
         }
-        return new ResVo(Const.SUCCESS);
     }
 
 //-------------------------------- 유치원 소식 수정 --------------------------------
 
     public ResVo putFullNotice(UpdFullNoticeDto dto){
 
-        Integer fix = mapper.selNoticeFix(dto.getIfullNotice());
+        try {
+            int level = authenticationFacade.getLevelPk();
+            dto.setIlevel(level);
 
-        if (fix >= 3 && dto.getFullNoticeFix() == 1){
-            return new ResVo(Const.FIX_MAX);
-        }
-
-        int result = mapper.putFullNotice(dto);
-        Integer selResult = mapper.selFullNoticePics(dto.getIfullNotice());
-        InsFullPicsDto pdto = new InsFullPicsDto();
-
-        if(result == 0){
-            return new ResVo(Const.FAIL);
-        }
-        if(dto.getFullPic() == null){
-            return new ResVo(Const.SUCCESS);
-        }
-        if (selResult > 0){
-            int delResult = mapper.delUpdFullNoticePics(dto.getIfullNotice());
-            if(delResult == 0){
-                return new ResVo(Const.PICS_UP_FAIL);
+            if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
+                throw new RestApiException(AuthErrorCode.NO_PERMISSION);
             }
-        }
-        pdto.setIfullNotice(dto.getIfullNotice());
-        String target = "/fullnotice/" + dto.getIfullNotice();
 
-        for(MultipartFile file : dto.getFullPic()){
-            String saverFileNm = mfu.transferTo(file, target);
-            pdto.getFullPic().add(saverFileNm);
-        }
+            Integer fix = mapper.selNoticeFix(dto.getIfullNotice());
 
-        int picResult = mapper.postFullNoticePics(pdto);
+            if (fix >= 3 && dto.getFullNoticeFix() == 1) {
+                throw new RestApiException(AuthErrorCode.OVER_FIX_NOTICE);
+            }
 
-        if (picResult < 1){
-            return new ResVo(Const.PICS_FAIL);
+            int result = mapper.putFullNotice(dto);
+            Integer selResult = mapper.selFullNoticePics(dto.getIfullNotice());
+            InsFullPicsDto pdto = new InsFullPicsDto();
+
+            if (result == 0) {
+                throw new RestApiException(AuthErrorCode.FAIL);
+            }
+            if (dto.getFullPic() == null) {
+                return new ResVo(Const.SUCCESS);
+            }
+            if (selResult > 0) {
+                int delResult = mapper.delUpdFullNoticePics(dto.getIfullNotice());
+                if (delResult == 0) {
+                    throw new RestApiException(AuthErrorCode.PICS_FAIL);
+                }
+            }
+            pdto.setIfullNotice(dto.getIfullNotice());
+            String target = "/fullnotice/" + dto.getIfullNotice();
+
+            for (MultipartFile file : dto.getFullPic()) {
+                String saverFileNm = mfu.transferTo(file, target);
+                pdto.getFullPic().add(saverFileNm);
+            }
+
+            int picResult = mapper.insFullNoticePics(pdto);
+
+            if (picResult < 1) {
+                throw new RestApiException(AuthErrorCode.PICS_FAIL);
+            }
+            return new ResVo(dto.getIfullNotice());
+
+        }catch (Exception e){
+            throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
         }
-        return new ResVo(dto.getIfullNotice());
 
     }
 //-------------------------------- 유치원 소식 수정 시 불러오기 --------------------------------
 
     public SelFullNoticeUpdVo getFullNoticeUpd(SelFullNoticeUpdDto dto){
-        SelFullNoticeUpdVo vo = mapper.selFullNoticeUpd(dto.getIfullNotice());
 
-        if(vo == null){
-            SelFullNoticeUpdVo result = new SelFullNoticeUpdVo();
-            result.setResult(Const.NO_INFORMATION);
-            return result;
-        }
+        try {
+            int level = authenticationFacade.getLevelPk();
+            dto.setIlevel(level);
 
-        List<String> picList = mapper.selFullNoticeUpdPics(dto.getIfullNotice());
+            if (!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)) {
+                throw new RestApiException(AuthErrorCode.NO_PERMISSION);
+            }
 
-        if (picList.size() == 0){
-            vo.setResult(Const.ONLY_CONTENTS);
+            SelFullNoticeUpdVo vo = mapper.selFullNoticeUpd(dto.getIfullNotice());
+
+            if (vo == null) {
+                throw new RestApiException(AuthErrorCode.NO_INFORMATION);
+            }
+
+            List<String> picList = mapper.selFullNoticeUpdPics(dto.getIfullNotice());
+
+            vo.setFullPic(picList);
+
             return vo;
-        }
-        vo.setFullPic(picList);
 
-        return vo;
+        }catch (Exception e){
+            throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
     }
 }

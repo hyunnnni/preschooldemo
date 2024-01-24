@@ -22,8 +22,21 @@ repositories {
 }
 
 dependencies {
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+    implementation 'org.mindrot:jbcrypt:0.4'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
+
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-    //implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
     compileOnly 'org.projectlombok:lombok'
@@ -33,16 +46,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.3'
-    //testImplementation 'org.springframework.security:spring-security-test'
-
-    // https://mvnrepository.com/artifact/com.google.firebase/firebase-admin
-    implementation 'com.google.firebase:firebase-admin:9.2.0'
-// https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
-// https://mvnrepository.com/artifact/org.mindrot/jbcrypt
-    implementation 'org.mindrot:jbcrypt:0.4'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.security:spring-security-test'
     implementation 'org.springframework.boot:spring-boot-starter-validation:3.2.1'
 
 }

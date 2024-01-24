@@ -14,6 +14,4 @@ public class SelKidManagementVo {
     private String kidNm;
     @Schema(title = "원아 프로필 사진")
     private String profile;
-    @Schema(title = "실패 응답값")
-    private int result;
 }

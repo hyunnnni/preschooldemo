@@ -1,5 +1,6 @@
 package com.preschool.preschooldemo.teacher;
 
+import com.preschool.preschooldemo.noticeboard.model.InsKidManagementProc;
 import com.preschool.preschooldemo.teacher.model.*;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -18,6 +19,8 @@ public interface TeacherMapper {
     List<Integer> SelGraduateKidPk(int iparent);
 //------------------------ 원아 재원 상태 조회 ------------------------
     List<Integer> selStateKid(List<Integer> ikids);
+//------------------------ 유치원 소식 수정 시 사진 불러오기 ------------------------
+    int insClass(InsKidManagementProc pdto);
 //------------------------ 원아 졸업 시 부모 계정 삭제 처리 ------------------------
     int updStateIsDelParent(DelStateParentIsProc pDto);
 //------------------------ 현재 계정이 있는 모든 부모의 정보 조회  ------------------------

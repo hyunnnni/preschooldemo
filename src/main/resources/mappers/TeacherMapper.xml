@@ -111,5 +111,14 @@
         FROM t_parent_kid
         WHERE iparent = #{iparent} AND ikid = #{ikid}
     </delete>
+    <!--           원아 반 승급 시 데이터 저장             -->
+    <insert id="insClass">
+        INSERT INTO t_grade
+        (ikid, iclass)
+        VALUES
+        <foreach collection="ikids" item="ikid" open="(" close=")" separator="),(">
+            #{ikid}, #{iclass}
+        </foreach>
+    </insert>
 
 </mapper>

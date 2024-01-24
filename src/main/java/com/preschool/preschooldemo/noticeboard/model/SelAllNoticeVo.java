@@ -23,6 +23,4 @@ public class SelAllNoticeVo {
     private int picCheck;
     @Schema(title = "알림장 업로드일")
     private String createdAt;
-    @Schema(title = "실패 응답값")
-    private int result;
 }
