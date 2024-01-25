@@ -50,6 +50,7 @@ public class FullNoticeService {
             if (dto.getFullPic() == null) {
                 return new ResVo(Const.SUCCESS);
             }
+
             pdto.setIfullNotice(dto.getIfullNotice());
             String target = "/fullnotice/" + dto.getIfullNotice();
 
@@ -63,8 +64,9 @@ public class FullNoticeService {
             if (picResult < 1) {
                 throw new RestApiException(AuthErrorCode.PICS_FAIL);
             }
+
             return new ResVo(dto.getIfullNotice());
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RestApiException(CommonErrorCode.INTERNAL_SERVER_ERROR);
         }
     }

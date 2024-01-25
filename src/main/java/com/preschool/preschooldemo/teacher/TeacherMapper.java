@@ -1,6 +1,6 @@
 package com.preschool.preschooldemo.teacher;
 
-import com.preschool.preschooldemo.noticeboard.model.InsKidManagementProc;
+import com.preschool.preschooldemo.teacher.model.InsKidManagementProc;
 import com.preschool.preschooldemo.teacher.model.*;
 import org.apache.ibatis.annotations.Mapper;
 

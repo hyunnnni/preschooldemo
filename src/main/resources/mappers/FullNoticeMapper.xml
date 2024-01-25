@@ -4,7 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.preschool.preschooldemo.fullnotice.FullNoticeMapper">
     <!--                 유치원 소식 작성                   -->
-    <insert id="insFullNoticee" keyProperty="ifullNotice" useGeneratedKeys="true">
+    <insert id="insFullNotice" keyProperty="ifullNotice" useGeneratedKeys="true">
         INSERT INTO t_full_notice
         (iteacher, full_title, full_contents, full_notice_fix)
         VALUES
@@ -26,10 +26,10 @@
         WHERE ifull_notice = #{ifullNotice}
     </select>
     <!--                 유치원 소식 사진 삭제                  -->
-     <delete id="delFullNoticePics">
-         DELETE
-         FROM t_full_notice_pics
-         WHERE ifull_notice = #{ifullNotice}
+    <delete id="delFullNoticePics">
+        DELETE
+        FROM t_full_notice_pics
+        WHERE ifull_notice = #{ifullNotice}
     </delete>
     <!--                 유치원 소식 삭제                   -->
     <delete id="delFullNotice">

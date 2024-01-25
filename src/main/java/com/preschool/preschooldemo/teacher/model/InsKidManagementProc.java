@@ -1,4 +1,4 @@
-package com.preschool.preschooldemo.noticeboard.model;
+package com.preschool.preschooldemo.teacher.model;
 
 import lombok.Builder;
 import lombok.Getter;

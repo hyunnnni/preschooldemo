@@ -5,10 +5,9 @@ import com.preschool.preschooldemo.common.Const;
 import com.preschool.preschooldemo.exception.AuthErrorCode;
 import com.preschool.preschooldemo.exception.CommonErrorCode;
 import com.preschool.preschooldemo.exception.RestApiException;
-import com.preschool.preschooldemo.noticeboard.model.InsKidManagementProc;
+import com.preschool.preschooldemo.teacher.model.InsKidManagementProc;
 import com.preschool.preschooldemo.security.AuthenticationFacade;
 import com.preschool.preschooldemo.teacher.model.*;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,10 +25,9 @@ public class TeacherService {
 //-------------------------------- 원아 관리 페이지 조회 --------------------------------
     public List<SelKidManagementVo> getKidManagement(SelKidManagementDto dto){
 
-        int level = authenticationFacade.getLevelPk();
-        dto.setIlevel(level);
-
         try{
+            int level = authenticationFacade.getLevelPk();
+            dto.setIlevel(level);
 
             if(!(dto.getIlevel() == Const.TEACHER || dto.getIlevel() == Const.BOSS)){
                 throw new RestApiException(AuthErrorCode.NO_PERMISSION);
