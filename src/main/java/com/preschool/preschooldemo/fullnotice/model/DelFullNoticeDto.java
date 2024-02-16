@@ -1,10 +1,7 @@
 package com.preschool.preschooldemo.fullnotice.model;
 
-import com.preschool.preschooldemo.common.Const;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Min;
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
 
 @Data
 @Schema(title = "유치원 소식 삭제에 필요한 데이터")

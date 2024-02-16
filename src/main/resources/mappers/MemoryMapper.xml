@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.preschool.preschooldemo.memory.MemoryMapper">
+    <select id="allMemoryTea">
+        SELECT A.imemory, C.ikid, A.memory_title as memoryTitle, A.memory_contents as memoryContents
+        , A.teacher_nm as teacherNm, A.created_at as createdAt
+        FROM t_memory A
+        JOIN t_memory_room B
+        ON A.imemory = B.imemory
+        JOIN t_kid C
+        ON B.ikid = C.ikid
+        <where>
+        <if test="iclass > 0">
+            C.iclass = #{iclass}
+        </if>
+        <if test="search != null and search != '' ">
+            (A.memory_title like concat ('%', #{search}, '%')
+            OR C.kid_nm like concat ('%', #{search}, '%'))
+        </if>
+        </where>
+        LIMIT #{startIdx}, #{rowCount}
+    </select>
+    <select id="allMemoryTeaCnt">
+        SELECT Count(A.imemory)
+        FROM t_memory A
+        JOIN t_memory_room B
+        ON A.imemory = B.imemory
+        JOIN t_kid C
+        ON B.ikid = C.ikid
+        <where>
+            <if test="iclass > 0">
+                C.iclass = #{iclass}
+            </if>
+            <if test="search != null and search != '' ">
+                (A.memory_title like concat ('%', #{search}, '%')
+                OR C.kid_nm like concat ('%', #{search}, '%'))
+            </if>
+        </where>
+    </select>
+    <select id="allMemoryPar">
+        SELECT A.imemory, C.ikid, A.memory_title as memoryTitle, A.memory_contents as memoryContents
+        , A.teacher_nm as teacherNm, A.created_at as createdAt
+        FROM t_memory A
+        JOIN t_memory_room B
+        ON A.imemory = B.imemory
+        JOIN t_kid C
+        ON B.ikid = C.ikid
+        <where>
+        <if test="ikid > 0">
+            C.ikid = #{ikid}
+        </if>
+        <if test="search != null and search != '' ">
+            (A.memory_title like concat ('%', #{search}, '%')
+            OR C.kid_nm like concat ('%', #{search}, '%'))
+        </if>
+        </where>
+        LIMIT #{startIdx}, #{rowCount}
+    </select>
+    <select id="allMemoryParCnt">
+        SELECT Count(A.imemory)
+        FROM t_memory A
+        JOIN t_memory_room B
+        ON A.imemory = B.imemory
+        JOIN t_kid C
+        ON B.ikid = C.ikid
+        <where>
+            <if test="ikid > 0">
+                C.ikid = #{ikid}
+            </if>
+            <if test="search != null and search != '' ">
+                (A.memory_title like concat ('%', #{search}, '%')
+                OR C.kid_nm like concat ('%', #{search}, '%'))
+            </if>
+        </where>
+    </select>
+    <select id="iMemoryComment">
+        SELECT COUNT(imemory_comment)
+        FROM t_memory_comment
+        WHERE imemory = #{imemory}
+    </select>
+    <select id="iMemoryIkid">
+        SELECT ikid
+        FROM t_memory
+        WHERE imemory = #{imemory}
+    </select>
+
+    <!-- 수정 전 원래 있던 내용 불러오기 -->
+    <select id="selMemory">
+        SELECT memory_title AS memoryTitle , memory_contents AS memoryContents
+        FROM t_memory
+        WHERE imemory = #{imemory}
+    </select>
+    <select id="selMemoryPic">
+        select memory_pic as memoryPic
+        from t_memory_album
+        where imemory = #{imemory}
+    </select>
+    <select id="selImemory">
+        select imemory
+        from t_memory
+        where imemory = #{imemory}
+    </select>
+
+    <!--                 추억 앨범 글 등록                -->
+    <insert id="insMemory" useGeneratedKeys="true" keyProperty="imemory">
+        INSERT INTO t_memory
+        SET iteacher = #{iteacher},
+        memory_title = #{memoryTitle},
+        memory_contents = #{memoryContents}
+    </insert>
+    <!--                 원아와 연결된 부모 pk 조회                -->
+    <select id="selKidConnectPar">
+        SELECT iparent
+        FROM t_parent_kid
+        WHERE ikid in (
+        <foreach collection="ikids" item="ikid" separator=",">
+            #{ikid}
+        </foreach>
+    </select>
+    <!--                 태그된 부모들 추억 앨범 글에 초대                -->
+    <insert id="insMemoryRoomInvite">
+        INSERT INTO t_memory_room
+        ( imemory, iparent )
+        VALUES(
+        <foreach collection="iparents" item="iparent" separator="),(">
+            #{imemory}, #{iparent}
+        </foreach>)
+    </insert>
+
+</mapper>
+
+
+

@@ -1,7 +1,7 @@
 package com.preschool.preschooldemo.teacher.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.preschool.preschooldemo.common.Const;
+import com.preschool.preschooldemo.common.utils.Const;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -14,6 +14,8 @@ public class SelKidManagementDto {
     private int kidCheck;
     @JsonIgnore
     private int ilevel;
+    @Schema(title = "검색기능")
+    private String search;
     @JsonIgnore
     private int startIdx;
     @JsonIgnore

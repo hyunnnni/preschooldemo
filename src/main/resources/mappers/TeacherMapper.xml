@@ -8,20 +8,44 @@
         SELECT ikid, iclass, kid_nm as kidNm, profile
         from t_kid
         <if test="kidCheck > 0">
-            where iclass = #{kidCheck}
+            where iclass = #{kidCheck} and state = 0
+            <if test="search != null and search != '' ">
+                AND kid_nm like concat ('%', #{search}, '%')
+            </if>
         </if>
-        <if test = "0 >= kidCheck">
+        <if test="0 >= kidCheck">
             where state = #{kidCheck}
+            <if test="search != null and search != '' ">
+                AND kid_nm like concat ('%', #{search}, '%')
+            </if>
         </if>
         LIMIT #{startIdx},#{rowCount}
+    </select>
+    <!--                 원아 관리 페이지 수 체크                   -->
+    <select id="selKidPage">
+        SELECT COUNT(ikid)
+        FROM t_kid
+        <if test="kidCheck > 0">
+            where iclass = #{kidCheck}
+            <if test="search != null and search != '' ">
+                AND kid_nm like concat ('%', #{search}, '%')
+            </if>
+        </if>
+        <if test="0 >= kidCheck">
+            where state = #{kidCheck}
+            <if test="search != null and search != '' ">
+                AND kid_nm like concat ('%', #{search}, '%')
+            </if>
+        </if>
     </select>
     <!--                 원아 재원 상태 / 반 승급 수정                   -->
     <update id="updKidStateOrClass">
         UPDATE t_kid
-        SET <if test="kidCheck > 0">
+        SET
+        <if test="kidCheck > 0">
             iclass = #{kidCheck}
         </if>
-        <if test = "0 >= kidCheck">
+        <if test="0 >= kidCheck">
             state = #{kidCheck}
         </if>
         WHERE ikid in (
@@ -39,6 +63,7 @@
         </foreach>)
         order by iparent
     </select>
+
     <!--         부모와 연결된 모든 원아 조회          -->
     <select id="SelGraduateKidPk">
         SELECT ikid
@@ -57,15 +82,34 @@
     <!--           원아 졸업 시 부모 계정 삭제 처리             -->
     <update id="updStateIsDelParent">
         UPDATE t_parent
-        SET pr_is_del = #{prIsDel}
+        SET pr_is_del = #{prIsDel},
+        ilevel = #{prIsDel}
         WHERE iparent = #{iparent}
     </update>
     <!--           현재 계정이 있는 모든 부모의 정보 조회             -->
     <select id="selParManagement">
-        SELECT iparent, parent_nm AS parentNm, uid, phone_nb AS phoneNb
-        FROM t_parent
+        SELECT DISTINCT A.iparent, A.parent_nm AS parentNm, A.uid, A.phone_nb AS phoneNb
+        FROM t_parent as A
+        JOIN t_parent_kid AS B
+        ON A.iparent = B.iparent
+        JOIN t_kid AS C
+        ON B.ikid = C.ikid
         where pr_is_del = #{prIsDel}
+        <if test="search != null and search != '' ">
+            AND (C.kid_nm like concat ('%', #{search}, '%')
+            OR A.parent_nm like concat ('%', #{search}, '%'))
+        </if>
         LIMIT #{startIdx}, #{rowCount}
+    </select>
+    <!--           현재 계정이 있는 모든 부모의 정보 조회 페이지 수            -->
+    <select id="selParPage">
+        SELECT COUNT(iparent)
+        FROM t_parent
+        WHERE pr_is_del = #{prIsDel}
+        <if test="search != null and search != '' ">
+            AND (C.kid_nm like concat ('%', #{search}, '%')
+            OR A.parent_nm like concat ('%', #{search}, '%'))
+        </if>
     </select>
     <!--           부모 정보 원아 반 별 기준으로 조회             -->
     <select id="selParManagementClass">
@@ -76,8 +120,27 @@
         JOIN t_kid AS C
         ON B.ikid = C.ikid
         where A.pr_is_del = #{prIsDel}
-        and C.iclass = #{iclass}
+        AND C.iclass = #{iclass}
+        <if test="search != null and search != '' ">
+            AND (C.kid_nm like concat ('%', #{search}, '%')
+            OR A.parent_nm like concat ('%', #{search}, '%'))
+        </if>
         LIMIT #{startIdx}, #{rowCount}
+    </select>
+    <!--           부모 정보 원아 반 별 기준으로 조회 페이지 수            -->
+    <select id="selParPageClass">
+        SELECT COUNT(DISTINCT A.iparent)
+        FROM t_parent AS A
+        JOIN t_parent_kid AS B
+        ON A.iparent = B.iparent
+        JOIN t_kid AS C
+        ON B.ikid = C.ikid
+        where A.pr_is_del = #{prIsDel}
+        and C.iclass = #{iclass}
+        <if test="search != null and search != '' ">
+            AND (C.kid_nm like concat ('%', #{search}, '%')
+            OR A.parent_nm like concat ('%', #{search}, '%'))
+        </if>
     </select>
     <!--           해당 부모와 연결이 되어 있는 원아의 이름과 반 조회             -->
     <select id="selConnectionKid">
@@ -87,7 +150,7 @@
         ON A.ikid = B.ikid
         where A.iparent = #{iparent}
     </select>
-    <!--           해당 부모와 연결된 원아들과 연결 끊기             -->
+    <!--           해당 부모와 연결된 원아들과 연결 끊기              -->
     <delete id="delParDisconnectKid">
         DELETE
         FROM t_parent_kid
@@ -121,4 +184,128 @@
         </foreach>
     </insert>
 
+    <!-- 선생님 정보 수정 시 정보 불러오기 -->
+    <select id="selTeacherEdit">
+        SELECT iteacher, ilevel, iclass, teacher_nm AS teacherNm, teacher_uid AS teacherUid, teacher_upw AS teacherUpw,
+        teacher_introduce AS teacherIntroduce, tc_role AS tcRole,
+        teacher_profile AS teacherProfile, tc_email AS tcEmail
+        FROM t_teacher
+        WHERE iteacher = #{iteacher}
+    </select>
+
+    <!-- 선생님 회원가입 시 아이디 중복 체크 (3차에 쓰셈) -->
+    <select id="selTeaUid">
+        SELECT COUNT(teacher_uid)
+        FROM t_teacher
+        WHERE teacher_uid = #{teacherUid}
+    </select>
+
+    <!-- 선생님 정보 수정 -->
+    <update id="updTeacher">
+        UPDATE t_teacher
+        SET teacher_nm = #{teacherNm}
+        , ilevel = #{ilevel}
+        , iclass = #{iclass}
+        , teacher_uid = #{teacherUid}
+        , teacher_upw = #{teacherUpw}
+        , tc_email = #{tcEmail}
+        , teacher_profile = #{teacherProfile}
+        , teacher_introduce = #{teacherIntroduce}
+        , tc_role =
+        <choose>
+            <when test="loginIlevel == 3">
+                #{tcRole}
+            </when>
+            <otherwise>
+                tc_role
+            </otherwise>
+        </choose>
+        WHERE iteacher = #{iteacher}
+    </update>
+
+
+    <!--           선생님 로그인 시 정보 조회             -->
+    <select id="selTeacher">
+        SELECT iteacher, ilevel, iclass, teacher_nm as teacherNm
+        , teacher_uid as teacherUid, teacher_upw as teacherUpw
+        , tc_email as tcEmail, teacher_introduce as teacherIntroduce
+        , teacher_profile as teacherProfile, created_at as createdAt
+        , tc_firebase_token as firebaseToken, tc_is_del as tcIsDel
+        from t_teacher
+        where teacher_uid = #{teacherUid}
+        and teacher_upw = #{teacherUpw}
+    </select>
+
+    <!--           선생님 로그인 시 비밀번호 체크            -->
+    <select id="checkTeacherInfo">
+        select teacher_upw
+        from t_teacher
+        where teacher_uid = #{teacherUid}
+    </select>
+    <!--           선생님이 학부모 정보 변경            -->
+    <update id="putTeacherParent">
+        update t_parent
+        set
+        <if test="parentNm != null">
+            parent_nm = #{parentNm}
+        </if>
+        <if test="phoneNb != null">
+            ,phone_nb = #{phoneNb}
+        </if>
+        <if test="prEmail != null">
+            ,pr_email = #{prEmail}
+        </if>
+        <if test="upw != null">
+            ,upw = #{upw}
+        </if>
+        where iparent = #{iparent}
+    </update>
+    <!--           선생님이 학부모 원래 정보 불러오기            -->
+    <select id="selBeforeInfo1">
+        select uid, parent_nm as parentNm, phone_nb as phoneNb, pr_email AS prEmail
+        from t_parent
+        where iparent = #{iparent}
+    </select>
+    <!--            선생님 원장님이 등록                            -->
+
+    <insert id="insTeacher" keyProperty="iteacher" useGeneratedKeys="true">
+        insert into t_teacher
+        set teacher_uid =#{teacherUid},teacher_upw =#{teacherUpw},
+        teacher_nm =#{teacherNm}, tc_email =#{tcEmail},
+        iclass =#{iclass},
+        teacher_introduce =#{teacherIntroduce},role = 'TEACHER'
+    </insert>
+    <update id="teacherUpPic">
+        update t_teacher
+        set teacher_profile = #{teacherProfile}
+        where iteacher = #{iteacher}
+    </update>
+
+    <!--             선생님 전체 조회 or 반별 조회                 -->
+    <select id="selAllTeacher">
+        select iclass, iteacher, teacher_nm as teacherNm, teacher_uid as teacherUid,tc_is_del as tcIsDel
+        tc_email as tcEmail, tc_memo as tcMemo, teacher_profile as teacherProfile
+        from t_teacher
+        <if test="iclass > 0 ">
+            where iclass = #{iclass}
+        </if>
+        LIMIT #{startIdx}, #{rowCount}
+    </select>
+    <!--           토큰            -->
+    <update id="updTeaFirebaseToken">
+        UPDATE t_teacher
+        SET tc_firebase_token = #{firebaseToken}
+        WHERE iteacher = #{iuser}
+    </update>
+
+
+    <!-- 3차 선생님 계정 삭제 처리  -->
+    <update id="updIsDelTeacher">
+        UPDATE t_teacher
+        SET tc_is_del = #{tcIsDel}
+        WHERE iteacher in (
+        <foreach collection="iteachers" item="iteacher" separator=",">
+            #{iteacher}
+        </foreach>)
+    </update>
 </mapper>

@@ -1,4 +1,4 @@
-package com.preschool.preschooldemo.teacher.model;
+package com.preschool.preschooldemo.memory.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.preschool.preschooldemo.common.utils.Const;
@@ -6,21 +6,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@Schema(title = "관리자 입장에서 학부모관리 페이지 조회에 필요한 데이터")
-public class SelParManagementDto {
+@Schema(title = "추억앨범 조회")
+public class AllSelMemoryDto {
     @Schema(title = "페이징 시 필요한 데이터")
     private int page;
-    @Schema(title = "조회 시 선택하는 반 전체 조회 시 값 필요없음")
+    @Schema(title = "반PK")
     private int iclass;
-
+    @Schema(title = "원아PK")
+    private int ikid;
     @Schema(title = "검색기능")
     private String search;
-
-    @JsonIgnore
-    private int ilevel;
-    @Schema(title = "현재 재원중인 원아의 가족 계정만 조회하기 위한 값")
-    @JsonIgnore
-    private int prIsDel= Const.ZERO;
     @JsonIgnore
     private int startIdx;
     @JsonIgnore
@@ -28,6 +23,9 @@ public class SelParManagementDto {
 
     public void setPage(int page) {
         this.rowCount = Const.PAGE_ROWCOUNT;
-        this.startIdx = (page-1) * rowCount;
+        this.startIdx = (page-1)*rowCount;
     }
+
+
+
 }

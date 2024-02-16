@@ -1,14 +1,10 @@
 package com.preschool.preschooldemo.fullnotice.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.preschool.preschooldemo.common.Const;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
-import org.hibernate.validator.constraints.Range;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -32,6 +28,8 @@ public class UpdFullNoticeDto {
     @JsonIgnore
     @Schema(title = "유치원 소식 사진")
     private List<MultipartFile> fullPic;
+    @Schema(title = "삭제된 사진이 있다면 그 사진의 pk들")
+    private List<Integer> delPics;
     @JsonIgnore
     private int ilevel;
 

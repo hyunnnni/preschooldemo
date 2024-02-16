@@ -1,8 +1,72 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.preschool.preschooldemo.fullnotice.FullNoticeMapper">
+    <!--                 게시판 전체 조회 시 상단 공지                  -->
+    <select id="getFullNoticeFix">
+        SELECT F.ifull_notice as iFullNotice , F.full_title as fullTitle
+        , T.teacher_nm as writer, F.full_notice_fix as fullNoticeFix
+        , F.created_at as createdAt
+        FROM t_full_notice F
+        JOIN t_teacher T
+        ON F.iteacher = T.iteacher
+        where F.full_notice_fix = 1
+        <if test="search != null and search != '' ">
+            AND full_title like concat ('%', #{search}, '%')
+        </if>
+        ORDER BY F.created_at DESC
+    </select>
+
+    <!--                 게시판 전체 조회 일반 공지                   -->
+    <select id="getFullNoticelist">
+        SELECT F.ifull_notice as iFullNotice, F.full_title as fullTitle
+        , T.teacher_nm as writer,F.full_notice_fix as fullNoticeFix
+        , F.created_at as createdAt
+        FROM t_full_notice F
+        JOIN t_teacher T
+        ON F.iteacher = T.iteacher
+        where F.full_notice_fix = 0
+        <if test="search != null and search != '' ">
+            AND full_title like concat ('%', #{search}, '%')
+        </if>
+        ORDER BY F.created_at DESC
+        limit #{starIdx}, #{row}
+    </select>
+    <!--                 게시판 전체 조회 개수                  -->
+    <select id="selNoticeCnt">
+        SELECT COUNT(ifull_notice)
+        FROM t_full_notice
+        WHERE full_notice_fix = 0
+        <if test="search != null and search != '' ">
+            AND full_title like concat ('%', #{search}, '%')
+        </if>
+    </select>
+    <select id="selNoticeFixCnt">
+        SELECT COUNT(ifull_notice)
+        FROM t_full_notice
+        WHERE full_notice_fix = 1
+        <if test="search != null and search != '' ">
+            AND full_title like concat ('%', #{search}, '%')
+        </if>
+    </select>
+
+    <!--                 게시판 상세 조회 사진                -->
+    <select id="selNoticePic">
+        SELECT ifull_pic AS ifullPic, full_pic AS pic
+        FROM t_full_notice_pics
+        where ifull_notice = #{iFullNotice}
+    </select>
+
+    <!--                 게시판 상세 조회 글                  -->
+    <select id="getNotice">
+        SELECT N.full_title as fullTitle, N.full_contents as fullContents,
+        T.teacher_nm as writer, N.created_at createdAt
+        FROM t_full_notice N
+        JOIN t_teacher T
+        ON N.iteacher = T.iteacher
+        where ifull_notice =#{iFullNotice}
+    </select>
+
     <!--                 유치원 소식 작성                   -->
     <insert id="insFullNotice" keyProperty="ifullNotice" useGeneratedKeys="true">
         INSERT INTO t_full_notice
@@ -19,12 +83,6 @@
             #{ifullNotice}, #{pic}
         </foreach>
     </insert>
-    <!--                 유치원 소식 작성자 pk 조회                  -->
-    <select id="selFullNoticeWriter">
-        SELECT iteacher
-        FROM t_full_notice
-        WHERE ifull_notice = #{ifullNotice}
-    </select>
     <!--                 유치원 소식 사진 삭제                  -->
     <delete id="delFullNoticePics">
         DELETE
@@ -50,7 +108,10 @@
     <delete id="delUpdFullNoticePics">
         DELETE
         FROM t_full_notice_pics
-        WHERE ifull_notice = #{ifullNotice}
+        WHERE ifull_pic in (
+        <foreach collection="delPics" item="ifullPic" separator=",">
+            #{ifullPic}
+        </foreach>)
     </delete>
     <!--                 유치원 소식 사진 개수 조회                  -->
     <select id="selFullNoticePics">

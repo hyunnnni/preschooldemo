@@ -1,6 +1,6 @@
 package com.preschool.preschooldemo.teacher.model;
 
-import com.preschool.preschooldemo.common.Const;
+import com.preschool.preschooldemo.common.utils.Const;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
