@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.preschool.preschooldemo.kid.KidMapper">
+    <!--                  원아 정보 출력                    -->
+    <select id="kidProfile">
+        SELECT kid_nm as kidNm, iclass, gender, profile, birth
+        , address, memo, emer_nm as emerNm, emer_nb as emerNb
+        , code
+        FROM t_kid
+        WHERE ikid = #{ikid}
+    </select>
+    <select id="kidParent">
+        SELECT a.iparent, a.uid, a.parent_nm as parentNm
+        , a.phone_nb as phoneNb, a.irelation
+        FROM t_parent a
+        JOIN t_parent_kid b
+        ON a.iparent = b.iparent
+        WHERE b.ikid = #{ikid}
+    </select>
+    <select id="kidGrowth">
+        (SELECT a.height, a.weight, a.body_date as bodyDate, b.growth
+        , b.growth_date as growthDate, b.growth_memo as growthMemo
+        , a.body_quarterly as bodyQuarterly, b.growth_quarterly as growthQuarterly
+        FROM t_body a
+        LEFT JOIN t_growth b
+        ON a.body_quarterly = b.growth_quarterly
+        AND a.ikid = b.ikid
+        WHERE a.ikid = #{ikid}
+        and year(body_date) = #{year}
+        and year(growth_date) = #{year})
+        UNION
+        (SELECT c.height, c.weight, c.body_date as bodyDate, d.growth
+        , d.growth_date as growthDate, d.growth_memo as growthMemo
+        , c.body_quarterly as bodyQuarterly, d.growth_quarterly as growthQuarterly
+        FROM t_body c
+        RIGHT JOIN t_growth d
+        ON c.body_quarterly = d.growth_quarterly
+        AND c.ikid = d.ikid
+        WHERE c.ikid = #{ikid}
+        and year(body_date) = #{year}
+        and year(growth_date) = #{year})
+        ORDER BY bodyQuarterly ASC
+
+    </select>
+    <!--                  원아 코드 수정                    -->
+    <update id="kidCode">
+        UPDATE t_kid
+        SET code = (SELECT SUBSTR(MD5(RAND()),1,10))
+        WHERE ikid = #{ikid}
+    </update>
+    <!--                원아 코드 중복 확인                 -->
+    <select id="kidAllCode">
+        SELECT code
+        FROM t_kid
+        <where>
+            <if test="code != null and code !='' ">
+                code = #{code}
+            </if>
+            <if test="ikid > 0">
+                ikid = #{ikid}
+            </if>
+        </where>
+    </select>
+    <!--                원아 코드 조회                 -->
+    <select id="kidAllCode1">
+        SELECT code
+        FROM t_kid
+    </select>
+    <!--                  원아 등록                         -->
+    <select id="code">
+        SELECT SUBSTR(MD5(RAND()),1,10) AS code
+    </select>
+    <insert id="kidSignup" keyProperty="ikid" useGeneratedKeys="true">
+        INSERT t_kid
+        SET kid_nm = #{kidNm}
+        , birth = #{birth}
+        , gender = #{gender}
+        , iclass = #{iclass}
+        , address = #{address}
+        , profile = #{profile}
+        , code = #{code}
+        , emer_nm = #{emerNm}
+        , emer_nb = #{emerNb}
+        , memo = #{memo}
+    </insert>
+    <update id="kidUpdPic">
+        UPDATE t_kid
+        SET profile = #{profile}
+        WHERE ikid = #{ikid}
+    </update>
+    <insert id="kidgrade">
+        INSERT INTO t_grade
+        SET ikid = #{ikid}
+        , iclass = #{iclass}
+    </insert>
+    <!--                  원아 발달사항 등록                  -->
+    <select id="growthCheck">
+        SELECT growth_quarterly
+        FROM t_growth
+        WHERE growth_quarterly = #{growthQuarterly}
+        AND ikid = #{ikid}
+        AND year(growth_date) = year(#{growthDate})
+    </select>
+    <select id="bodyCheck">
+        SELECT body_quarterly
+        FROM t_body
+        WHERE body_quarterly = #{bodyQuarterly}
+        AND ikid = #{ikid}
+        AND year(body_date) = year(#{bodyDate})
+    </select>
+    <insert id="kidGrowthInsDetail">
+        INSERT t_growth
+        <set> ikid = #{ikid}
+        , growth_quarterly = #{growthQuarterly}
+        <if test="growthDate != null">
+            , growth_date = #{growthDate}
+        </if>
+        <if test="growth > 0">
+            , growth = #{growth}
+        </if>
+        <if test="growthMemo != null">
+            , growth_memo = #{growthMemo}
+        </if>
+        </set>
+    </insert>
+    <insert id="kidBodyInsDetail">
+        INSERT t_body
+        <set> ikid = #{ikid}
+        , body_quarterly = #{bodyQuarterly}
+        <if test="bodyDate != null">
+            , body_date = #{bodyDate}
+        </if>
+        <if test="height > 0">
+            , height = #{height}
+        </if>
+        <if test="weight > 0">
+            , weight = #{weight}
+        </if>
+        </set>
+    </insert>
+    <!--              원아 발달사항 수정 시 기존 정보 출력              -->
+    <select id="kidDetailEdit">
+        SELECT kid_nm as kidNm, birth, gender, iclass
+        FROM t_kid
+        WHERE ikid = #{ikid}
+    </select>
+    <!--                  원아 발달사항 수정                  -->
+    <update id="kidGrowthUpdDetail">
+        UPDATE t_growth
+        <set>
+        <if test="growth > 0">
+            , growth = #{growth}
+        </if>
+        <if test="growthMemo != null">
+            , growth_memo = #{growthMemo}
+        </if>
+            , growth_date = #{growthDate}
+        </set>
+        WHERE ikid = #{ikid}
+        and growth_quarterly = #{growthQuarterly}
+    </update>
+    <update id="kidBodyUpdDetail">
+        UPDATE t_body
+        <set>
+        <if test="height > 0">
+            height = #{height}
+        </if>
+        <if test="weight > 0">
+            , weight = #{weight}
+        </if>
+            , body_date = #{bodyDate}
+        </set>
+        WHERE ikid = #{ikid}
+        and body_quarterly = #{bodyQuarterly}
+    </update>
+    <!--              원아 수정 시 기존 정보 출력              -->
+    <select id="kidEdit">
+        SELECT kid_nm as kidNm, birth, gender, iclass
+        , address, profile, state, date(created_at) as createdAt
+        , emer_nm as emerNm, emer_nb as emerNb, memo
+        FROM t_kid
+        WHERE ikid = #{ikid}
+    </select>
+    <!--                  원아 정보 수정                  -->
+    <update id="kidUpdProfile">
+        UPDATE t_kid
+        SET kid_nm = #{kidNm}
+        , birth = #{birth}
+        , gender = #{gender}
+        , iclass = #{iclass}
+        , address = #{address}
+        , profile = #{profile}
+        , emer_nm = #{emerNm}
+        , emer_nb = #{emerNb}
+        , memo = #{memo}
+        WHERE ikid = #{ikid}
+    </update>
+    <!--                  원아 해당년도 졸업                  -->
+    <delete id="allGraduateKid">
+        DELETE b, c, d, e, f, g, h
+        FROM t_kid a
+        left JOIN t_parent_kid b
+        ON a.ikid = b.ikid
+        left JOIN t_growth c
+        ON a.ikid = c.ikid
+        left JOIN t_body d
+        ON a.ikid = d.ikid
+        left JOIN t_grade e
+        ON a.ikid = e.ikid
+        left JOIN t_notice_board f
+        ON a.ikid = f.ikid
+        left JOIN t_notice_pics g
+        ON f.inotice = g.inotice
+        left JOIN t_notice_comment h
+        ON f.inotice = h.inotice
+        WHERE YEAR(CURRENT_DATE) - 53 <![CDATA[>=]]> YEAR(a.birth)
+    </delete>
+    <!--                  원아 해당년도 졸업                  -->
+    <delete id="allGraduateDelKid">
+        DELETE
+        FROM t_kid
+        WHERE YEAR(CURRENT_DATE) - 53 <![CDATA[>=]]> YEAR(birth)
+    </delete>
+
+    <!--         부모와 연결 끊기          -->
+    <!--         부모와 연결된 모든 원아 조회          -->
+    <select id="selKidPk" resultType="int">
+        SELECT ikid
+        FROM t_kid
+        where YEAR(CURRENT_DATE) - 53 <![CDATA[>=]]> YEAR(birth)
+    </select>
+    <select id="selKidParentPk">
+        SELECT ikid
+        FROM t_parent_kid
+        where iparent = #{iparent}
+
+    </select>
+    <select id="selParentPk">
+        SELECT iparent
+        FROM t_parent_kid
+        where ikid in
+        <foreach collection="ikids" item = "ikid" open="(" separator="," close=")">
+            #{ikid}
+        </foreach>
+    </select>
+
+    <delete id="delParentKid">
+        DELETE
+        FROM t_parent_kid
+        WHERE iparent in
+        <foreach collection="ikids" item = "ikid" open="(" separator="," close=")">
+            #{ikid}
+        </foreach>
+    </delete>
+    <delete id="delParent">
+        DELETE
+        FROM t_parent
+        WHERE iparent = #{iparent}
+    </delete>
+</mapper>

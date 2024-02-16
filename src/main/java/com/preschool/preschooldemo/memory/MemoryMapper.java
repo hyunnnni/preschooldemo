@@ -27,5 +27,6 @@ public interface MemoryMapper {
     int insMemory(InsMemoryDto dto);
     //-------------------------------- 태그된 부모들 추억 앨범 글에 초대  --------------------------------
     int insMemoryRoomInvite(InsRoomInviteProcDto dto);
-
+    //-------------------------------- 추억 앨범 사진 등록  --------------------------------
+    int insMemoryPic(InsMemoryPicsDto picsDto);
 }

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.preschool.preschooldemo.parent.ParentMapper">
+    <!--           식별코드셀렉            -->
+    <select id="selCode">
+        select ikid, kid_nm as kidNm, iclass, code
+        from t_kid
+        where code = #{code}
+    </select>
+    <!--         해당 부모와 원아가 연결 되어 있는지 체크              -->
+    <select id="selKidParent">
+        select ikid
+        from t_parent_kid
+        where ikid = #{ikid} and iparent = #{iparent}
+    </select>
+    <!--           로그인시 애 가져오기            -->
+    <select id="selKid">
+        SELECT K.ikid, K.kid_nm AS kidNm
+        FROM t_kid K
+        JOIN t_parent_kid P
+        ON K.ikid = P.ikid
+        WHERE P.iparent = #{iparent}
+    </select>
+    <!--           원아와 연결된 부모 pk            -->
+    <select id="connectParent">
+        select iparent
+        from t_parent_kid
+        where ikid = #{ikid}
+    </select>
+    <!--           마이페이지 아이 추가            -->
+    <insert id="insParentKidTable">
+        insert into t_parent_kid
+        set ikid = #{ikid}
+        , iparent = #{iparent}
+    </insert>
+    <!--           부모님 로그인 성공 시 정보 조회            -->
+    <select id="checkParentsId">
+        SELECT uid, upw, iparent, ilevel, pr_is_del as prIsDel
+        from t_parent
+        where uid = #{uid} and upw = #{upw}
+    </select>
+    <!--           부모 탈퇴            -->
+    <update id="delParent">
+        update t_parent
+        set pr_is_del = 1
+        where iparent = #{iparent}
+    </update>
+    <delete id="delParentkid">
+        DELETE
+        FROM t_parent_kid
+        where iparent = #{iparent}
+    </delete>
+    <!--           아이디중복체크            -->
+    <select id="checkParentInfo">
+        select upw
+        from t_parent
+        where uid = #{uid}
+    </select>
+    <!--           부모 회원가입            -->
+    <insert id="insParent" useGeneratedKeys="true" keyProperty="iparent">
+        insert into t_parent
+        set parent_nm = #{parentNm}
+        , uid = #{uid}
+        , upw = #{upw}
+        , ilevel = 1
+        , phone_nb = #{phoneNb}
+        , irelation = #{irelation}
+        , pr_email = #{prEmail}
+    </insert>
+    <!--           원래정보 불러오기            -->
+    <select id="selBeforeInfo">
+        select uid, parent_nm as parentNm, phone_nb as phoneNb, pr_email AS prEmail
+        from t_parent
+        where iparent = #{iparent}
+    </select>
+    <!--           마이페이지 정보수정            -->
+    <update id="putParent">
+        update t_parent
+        set
+        <if test="parentNm != null">
+            parent_nm = #{parentNm}
+        </if>
+        <if test="phoneNb != null">
+            ,phone_nb = #{phoneNb}
+        </if>
+        <if test="prEmail != null">
+            ,pr_email = #{prEmail}
+        </if>
+        <if test="upw != null">
+            ,upw = #{upw}
+        </if>
+        where iparent = #{iparent}
+    </update>
+    <!--           토큰            -->
+    <update id="updParFirebaseToken">
+        UPDATE t_parent
+        SET pr_firebase_token = #{firebaseToken}
+        WHERE iparent = #{iuser}
+    </update>
+</mapper>

@@ -93,7 +93,7 @@
     </select>
     <select id="selMemoryPic">
         select memory_pic as memoryPic
-        from t_memory_album
+        from t_memory_pics
         where imemory = #{imemory}
     </select>
     <select id="selImemory">
@@ -127,7 +127,16 @@
             #{imemory}, #{iparent}
         </foreach>)
     </insert>
-
+    <!--                 추억 앨범 사진 등록                -->
+    <insert id="insMemoryPic">
+        INSERT INTO t_memory_pics
+        ( imemory, memory_pic )
+        VALUES
+        (
+        <foreach collection="memoryPics" item="pic" separator="),(">
+            #{imemory}, #{pic}
+        </foreach>)
+    </insert>
 </mapper>
 
 

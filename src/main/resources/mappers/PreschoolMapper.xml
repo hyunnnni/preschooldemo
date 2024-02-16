@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.preschool.preschooldemo.preschool.PreschoolMapper">
+    
+    <select id="getKidProfile">
+        select kid_nm as kidNm, profile, iclass, ikid
+        from t_kid
+        WHERE state = 0
+        ORDER BY ikid ASC
+    </select>
+
+   <select id="getTeacherProfile">
+       select iteacher, teacher_nm as teacherNm, iclass,
+       teacher_profile as teacherProfile, teacher_introduce as teacherIntroduce
+       from t_teacher
+       ORDER BY iclass ASC
+   </select>
+
+</mapper>

@@ -49,6 +49,7 @@ public class MemoryController {
     @Operation(summary = "3차 추억 앨범 등록", description = """
             선생님만 등록 가능<br>
             사진 최대 20장 등록 가능
+            사진 업로드 필수
                     <select>
                     <option>1(좋아요)</option>
                     <option>0(좋아요취소)</option>

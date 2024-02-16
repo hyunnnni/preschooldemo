@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.preschool.preschooldemo.notice.NoticeMapper">
+    <!--                 알림장 등록 글                 -->
+    <insert id="insNotice" useGeneratedKeys="true" keyProperty="inotice">
+        INSERT INTO t_notice_board
+        SET ikid = #{ikid},
+        notice_title = #{noticeTitle},
+        notice_contents = #{noticeContents},
+        notice_check = #{noticeCheck}
+        <if test="writerIlevel == 1">
+            ,iparent = #{writerIuser}
+        </if>
+        <if test="writerIlevel == 2 || writerIlevel == 3">
+            ,iteacher = #{writerIuser}
+        </if>
+
+    </insert>
+    <!--                 알림장 등록 사진                  -->
+    <insert id="insNoticePics">
+        INSERT INTO t_notice_pics
+        (inotice, notice_pic)
+        VALUES
+        <foreach collection="pics" item="pic" open="(" separator="),(" close=")">
+            #{inotice}, #{pic}
+        </foreach>
+    </insert>
+    <!--                 알림장 작성 시 푸시를 받을 학부모의 토큰값과 pk값 조회                  -->
+    <select id="selParFirebaseByLoginUser">
+        SELECT A.pr_firebase_token AS FirebaseToken
+        FROM t_parent AS A
+        INNER JOIN t_parent_kid AS B
+        ON A.iparent = B.iparent
+        INNER JOIN t_notice_board AS C
+        ON B.ikid = C.ikid
+        WHERE C.inotice in (
+        <foreach collection="inotices" item="inotice" separator=",">
+            #{inotice}
+        </foreach>
+    </select>
+    <!--                 알림장 작성 시 푸시를 받을 선생님의 토큰값과 pk값 조회                  -->
+    <select id="selTeaFirebaseByLoginUser">
+        SELECT tc_firebase_token AS FirebaseToken
+        FROM t_teacher
+    </select>
+    <!--                 알림장 수정 시 내용 조회 글                -->
+    <select id="noticeEdit">
+        SELECT ikid, inotice, notice_title AS noticeTitle, notice_contents AS noticeContents
+        FROM t_notice_board
+        WHERE inotice = #{inotice}
+        AND ikid = #{ikid}
+    </select>
+    <!--                 알림장 수정                  -->
+    <update id="updNotice">
+        UPDATE t_notice_board
+        SET iteacher = #{iteacher}
+        , ikid = #{ikid}
+        , notice_title = #{noticeTitle}
+        , notice_contents = #{noticeContents}
+        WHERE inotice = #{inotice}
+    </update>
+    <!--                 알림장 수정 시 내용 조회 사진                  -->
+    <select id="noticeEditPics">
+        SELECT inotice_pic as inoticePic, notice_pic as noticePic
+        FROM t_notice_pics
+        WHERE inotice = #{inotice}
+    </select>
+    <select id="noticeSelPics">
+        SELECT inotice_pic
+        FROM t_notice_pics
+        WHERE inotice = #{inotice}
+    </select>
+    <!--                 수정 시 알림장 사진 삭제                  -->
+    <delete id="delNoticePics">
+        DELETE FROM t_notice_pics
+        WHERE inotice_pic in
+        <foreach collection="inoticePic" item="pk" open="(" separator="," close=")">
+            #{pk}
+        </foreach>
+    </delete>
+    <!--                 알림장 삭제 댓글, 사진                  -->
+    <delete id="delAllNotice">
+        DELETE B, C
+        FROM t_notice_board A
+        LEFT JOIN t_notice_pics B
+        ON A.inotice = B.inotice
+        LEFT JOIN t_notice_comment C
+        ON A.inotice = C.inotice
+        WHERE A.inotice = #{inotice}
+    </delete>
+    <!--             알림장 글 삭제                 -->
+    <delete id="delNotice">
+        DELETE
+        FROM t_notice_board
+        WHERE inotice = #{inotice}
+    </delete>
+    <!--                 학부모 유저 시점 원아 알림장 전체 조회                  -->
+    <select id="selAllNoticeBoardPar">
+
+        SELECT A.inotice, A.notice_title AS noticeTitle, A.notice_contents AS noticeContents, B.kid_nm AS kidNm,
+        B.iclass, A.created_at AS createdAt
+        FROM t_notice_board AS A
+        JOIN t_kid AS B
+        ON A.ikid = B.ikid
+        JOIN t_parent_kid AS C
+        ON B.ikid = C.ikid
+        JOIN t_parent AS D
+        ON C.iparent = D.iparent
+        WHERE D.iparent = #{loginedIuser}
+        <if test="fromTo == 0">
+            <![CDATA[ AND A.iteacher >= 1 ]]>
+        </if>
+        <if test="fromTo == 1">
+            <![CDATA[ AND A.iparent >= 1 ]]>
+        </if>
+        <if test="ikid > 0">
+            AND c.ikid = #{ikid}
+        </if>
+        <if test="year != null">
+            AND year(A.created_at) = #{year}
+        </if>
+        <if test="search != null and search != '' ">
+            AND B.kid_nm like concat ('%', #{search}, '%')
+        </if>
+        ORDER BY A.created_at DESC
+        LIMIT #{startIdx}, #{rowCount}
+
+    </select>
+    <!--                 학부모 유저 시점 원아 알림장 전체 개수 조회                  -->
+    <select id="selNoticeParCnt">
+        SELECT COUNT(A.inotice)
+        FROM t_notice_board AS A
+        JOIN t_kid AS B
+        ON A.ikid = B.ikid
+        JOIN t_parent_kid AS C
+        ON B.ikid = C.ikid
+        JOIN t_parent AS D
+        ON C.iparent = D.iparent
+        WHERE D.iparent = #{loginedIuser}
+        <if test="fromTo == 0">
+            <![CDATA[ AND A.iteacher >= 1 ]]>
+        </if>
+        <if test="fromTo == 1">
+            <![CDATA[ AND A.iparent >= 1 ]]>
+        </if>
+        <if test="ikid > 0">
+            AND c.ikid = #{ikid}
+        </if>
+        <if test="year != null">
+            AND year(A.created_at) = #{year}
+        </if>
+        <if test="search != null and search != '' ">
+            AND B.kid_nm like concat ('%', #{search}, '%')
+        </if>
+    </select>
+    <!--                 선생님 유저 시점 원아 알림장 전체 조회                  -->
+    <select id="selAllNoticeBoardTea">
+        SELECT A.inotice, A.notice_title AS noticeTitle, A.notice_contents AS noticeContents,
+        B.kid_nm AS kidNm, B.iclass, A.created_at AS createdAt
+        FROM t_notice_board AS A
+        JOIN t_kid AS B
+        ON A.ikid = B.ikid
+        <if test="iclass > 0">
+            WHERE B.iclass = #{iclass} and B.state = 0
+        </if>
+        <if test="iclass == 0">
+            WHERE B.state = #{iclass}
+        </if>
+        <if test="fromTo == 0">
+            <![CDATA[ AND A.iparent >= 1 ]]>
+        </if>
+        <if test="fromTo == 1">
+            <![CDATA[ AND A.iteacher >= 1 ]]>
+        </if>
+        <if test="year != null">
+            AND year(A.created_at) = #{year}
+        </if>
+        <if test="search != null and search != '' ">
+            AND B.kid_nm like concat ('%', #{search}, '%')
+        </if>
+        ORDER BY A.created_at DESC
+        LIMIT #{startIdx}, #{rowCount}
+    </select>
+    <!--                 선생님 유저 시점 원아 알림장 전체 개수 조회                  -->
+    <select id="selNoticeTeaCnt">
+        SELECT COUNT(A.inotice)
+        FROM t_notice_board AS A
+        JOIN t_kid AS B
+        ON A.ikid = B.ikid
+        <if test="iclass > 0">
+            WHERE B.iclass = #{iclass} and B.state = 0
+        </if>
+        <if test="iclass == 0">
+            WHERE B.state = #{iclass}
+        </if>
+        <if test="year != null">
+            AND year(A.created_at) = #{year}
+        </if>
+        <if test="search != null and search != '' ">
+            AND B.kid_nm like concat ('%', #{search}, '%')
+        </if>
+    </select>
+    <!--                 알림장 전체 조회 시 해당 알림장의 사진 유/무 체크                  -->
+    <select id="selNoticeBoardPicCheck">
+        SELECT COUNT(inotice_pic)
+        FROM t_notice_pics
+        WHERE inotice = #{inotice}
+    </select>
+    <!--                 알림장 상세 조회                  -->
+    <select id="selNoticeDetail">
+        SELECT A.inotice, A.notice_title AS noticeTitle, A.notice_contents AS noticeContents
+        , A.created_at AS createdAt, B.kid_nm AS kidNm, B.iclass
+        FROM t_notice_board AS A
+        JOIN t_kid AS B
+        ON A.ikid = B.ikid
+        WHERE A.inotice = #{inotice}
+    </select>
+    <!--                 알림장 댓글 정보 조회                 -->
+    <select id="selNoticeDetailCom">
+        SELECT inotice_comment AS inoticeComment, notice_comment AS noticeComment,
+        created_at as createdAt, iteacher, iparent
+        FROM t_notice_comment
+        WHERE inotice = #{inotice}
+    </select>
+    <!--                 알림장 작성자 pk로 이름 조회(관리자)                 -->
+    <select id="selNoticeDetailTea">
+        SELECT iteacher AS writerIuser, teacher_nm AS writerName, ilevel
+        FROM t_teacher
+        WHERE iteacher = #{iteacher}
+    </select>
+    <!--                 알림장 작성자 pk로 이름 조회(부모님)                 -->
+    <select id="selNoticeDetailPar">
+        SELECT iparent AS writerIuser, parent_nm AS writerName, ilevel
+        FROM t_parent
+        WHERE iparent = #{iparent}
+    </select>
+    <!--                 알림장 사진 조회                 -->
+    <select id="selNoticeDetailPics">
+        SELECT notice_pic, inotice
+        FROM t_notice_pics
+        WHERE inotice = #{inotice}
+    </select>
+    <!--                 알림장 댓글 등록                 -->
+    <insert id="insNoticeComment">
+        INSERT INTO t_notice_comment
+        SET inotice = #{inotice},
+        notice_comment = #{noticeComment},
+        iteacher = #{iteacher},
+        iparent = #{iparent}
+    </insert>
+    <!--                 알림장 댓글 삭제                 -->
+    <delete id="delNoticeComment">
+        DELETE
+        FROM t_notice_comment
+        WHERE inotice_comment = #{inoticeComment} AND
+        <if test="iteacher > 0">
+            iteacher = #{iteacher}
+        </if>
+        <if test="iparent > 0">
+            iparent = #{iparent}
+        </if>
+    </delete>
+    <!--                 알림장 작성 시 원아 태그에 쓰일 모든 원아 정보                  -->
+    <select id="selFromKids">
+        SELECT ikid, iclass, kid_nm AS kidNm
+        FROM t_kid
+        ORDER BY iclass
+    </select>
+</mapper>

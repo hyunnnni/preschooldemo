@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.preschool.preschooldemo.album.AlbumMapper">
+
+    <!-- 활동 앨범 전체 조회 -->
+    <select id="selAllAlbum">
+        SELECT A.ialbum, A.album_title AS albumTitle, B.album_pic AS albumPic
+        FROM t_album A
+        LEFT JOIN t_album_pics B
+        ON A.ialbum = B.ialbum
+        <if test="search != null and search != '' ">
+            WHERE album_title like concat ('%', #{search}, '%')
+        </if>
+        GROUP BY A.ialbum
+        ORDER BY A.ialbum DESC
+        LIMIT #{startIdx}, #{rowCount}
+    </select>
+    <!-- 활동 앨범 개수 -->
+    <select id="selAlbumCnt">
+        SELECT COUNT(ialbum)
+        FROM t_album
+    </select>
+    <!-- 활동 앨범 상세 조회 (글)-->
+    <select id="selDetailAlbum">
+        SELECT album_title AS albumTitle, album_contents AS albumContents, created_at AS createdAt
+        FROM t_album
+        WHERE ialbum = #{ialbum}
+    </select>
+
+    <!-- 활동 앨범 상세 조회 (사진) -->
+    <select id="selPicsAlbum">
+        SELECT album_pic AS albumPic
+        FROM t_album_pics
+        WHERE ialbum = #{ialbum}
+    </select>
+
+    <!-- 활동 앨범 상세 조회 (댓글) -->
+    <select id="selCommentAlbum">
+        SELECT ialbum_comment AS ialbumComment, album_comment AS albumComment, created_at AS createdAt, iteacher, iparent
+        FROM t_album_comment
+        WHERE ialbum = #{ialbum}
+        ORDER BY createdAt ASC
+    </select>
+
+    <!--                 활동 앨범 작성자 pk로 이름 조회(관리자)                 -->
+    <select id="selAlbumDetailTea">
+        SELECT iteacher AS writerIuser, teacher_nm AS writerName, ilevel
+        FROM t_teacher
+        WHERE iteacher = #{iteacher}
+    </select>
+    <!--                 활동 앨범 작성자 pk로 이름 조회(부모님)                 -->
+    <select id="selAlbumDetailPar">
+        SELECT iparent AS writerIuser, parent_nm AS writerName, ilevel
+        FROM t_parent
+        WHERE iparent = #{iparent}
+    </select>
+
+
+    <!-- 활동 앨범 등록 -->
+    <insert id="insAlbum" useGeneratedKeys="true" keyProperty="ialbum">
+        INSERT INTO t_album
+        SET iteacher = #{iteacher}
+        , album_title = #{albumTitle}
+        , album_contents = #{albumContents}
+    </insert>
+
+    <!-- 활동 앨범 사진 등록 -->
+    <insert id="insAlbumPic">
+        INSERT INTO t_album_pics
+        (ialbum, album_pic)
+        VALUES
+        <foreach collection="albumPic" item="albumPic" separator=", ">
+            ( #{ialbum}, #{albumPic} )
+        </foreach>
+    </insert>
+
+    <!-- 활동 앨범 글 내용 가져오기-->
+    <select id="selAlbumContent">
+        SELECT album_title AS albumTitle, album_contents AS albumContents
+        FROM t_album
+        WHERE ialbum = #{ialbum}
+    </select>
+
+    <!-- 활동 앨범 글 수정 시 사진 조회 -->
+    <select id="albumEditPics">
+        SELECT ialbum_pic AS ialbumPic, album_pic AS albumPic
+        FROM t_album_pics
+        WHERE ialbum = #{ialbum}
+    </select>
+
+    <!-- 활동 앨범 수정 -->
+    <update id="updAlbum">
+        UPDATE t_album
+        SET album_title = #{albumTitle}
+        , album_contents = #{albumContents}
+        WHERE ialbum = #{ialbum}
+    </update>
+
+    <!-- 활동 앨범 수정 시 사진 삭제 -->
+    <delete id="delAlbumPic">
+        DELETE FROM t_album_pics
+        WHERE ialbum_pic in
+        <foreach collection="delPics" item="ialbumPic" open="(" separator="," close=")">
+            #{ialbumPic}
+        </foreach>
+
+    </delete>
+
+    <!-- 활동 앨범 사진과 댓글 삭제 -->
+    <delete id="delAlbumCommentPics">
+        DELETE B, C
+        FROM t_album A
+        LEFT JOIN t_album_comment B
+        ON A.ialbum = B.ialbum
+        LEFT JOIN t_album_pics C
+        ON A.ialbum = C.ialbum
+        WHERE A.ialbum = #{ialbum}
+        <if test="ilevel == 2">
+            and A.iteacher = #{iteacher}
+        </if>
+    </delete>
+
+    <!-- 활동 앨범 글 삭제 -->
+    <delete id="delAlbumAll">
+        DELETE
+        FROM t_album
+        WHERE ialbum = #{ialbum}
+        <if test="ilevel == 2">
+            and A.iteacher = #{iteacher}
+        </if>
+    </delete>
+
+    <!-- 활동 앨범 댓글 등록 -->
+    <insert id="insAlbumComment" keyProperty="ialbumComment" useGeneratedKeys="true">
+        INSERT INTO t_album_comment
+        SET ialbum = #{ialbum}
+        , album_comment = #{albumComment}
+        <if test="iteacher > 0">
+            , iteacher = #{iteacher}
+        </if>
+        <if test="iparent > 0">
+            , iparent = #{iparent}
+        </if>
+    </insert>
+
+    <!-- 활동 앨범 댓글 삭제 -->
+    <delete id="delAlbumComment">
+        DELETE FROM t_album_comment
+        WHERE ialbum_comment = #{ialbumComment} and
+        <if test="iteacher > 0">
+            iteacher = #{iteacher}
+        </if>
+        <if test="iparent > 0">
+            iparent = #{iparent}
+        </if>
+    </delete>
+
+</mapper>
+
+
+
