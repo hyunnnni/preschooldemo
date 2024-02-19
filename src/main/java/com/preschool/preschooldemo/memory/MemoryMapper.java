@@ -21,12 +21,14 @@ public interface MemoryMapper {
     List<String> selMemoryPic(int imemory);
     String selImemory(int imemory);
 
-    //-------------------------------- 원아와 연결된 부모 pk 조회 --------------------------------
-    List<Integer> selKidConnectPar(List<Integer> ikids);
+    //-------------------------------- 원아와 연결된 부모의 토큰값 구하기  --------------------------------
+    List<SelMemoryOtherTokens> selParFirebaseByLoginUser(List<Integer> ikids);
     //-------------------------------- 추억 앨범 글 등록 --------------------------------
     int insMemory(InsMemoryDto dto);
     //-------------------------------- 태그된 부모들 추억 앨범 글에 초대  --------------------------------
     int insMemoryRoomInvite(InsRoomInviteProcDto dto);
     //-------------------------------- 추억 앨범 사진 등록  --------------------------------
     int insMemoryPic(InsMemoryPicsDto picsDto);
+    //-------------------------------- 추억 앨범 댓글 삭제  --------------------------------
+    int delMemoryComment(DelMemoryCommentDto dto);
 }

@@ -109,11 +109,15 @@
         memory_title = #{memoryTitle},
         memory_contents = #{memoryContents}
     </insert>
-    <!--                 원아와 연결된 부모 pk 조회                -->
-    <select id="selKidConnectPar">
-        SELECT iparent
-        FROM t_parent_kid
-        WHERE ikid in (
+    <!--                 원아와 연결된 부모의 토큰값 구하기                -->
+    <select id="selParFirebaseByLoginUser">
+        SELECT A.pr_firebase_token AS FirebaseToken, C.ikid, C.kid_nm AS kidNm
+        FROM t_parent AS A
+        INNER JOIN t_parent_kid AS B
+        ON A.iparent = B.iparent
+        INNER JOIN t_kid AS C
+        ON B.ikid = C.ikid
+        WHERE C.ikid in (
         <foreach collection="ikids" item="ikid" separator=",">
             #{ikid}
         </foreach>
@@ -121,10 +125,10 @@
     <!--                 태그된 부모들 추억 앨범 글에 초대                -->
     <insert id="insMemoryRoomInvite">
         INSERT INTO t_memory_room
-        ( imemory, iparent )
+        ( imemory, ikid )
         VALUES(
-        <foreach collection="iparents" item="iparent" separator="),(">
-            #{imemory}, #{iparent}
+        <foreach collection="ikids" item="ikid" separator="),(">
+            #{imemory}, #{ikid}
         </foreach>)
     </insert>
     <!--                 추억 앨범 사진 등록                -->
@@ -137,6 +141,18 @@
             #{imemory}, #{pic}
         </foreach>)
     </insert>
+    <!--                 추억 앨범 댓글 삭제                -->
+    <delete id="delMemoryComment">
+        DELETE
+        FROM t_memory_comment
+        WHERE imemory_comment = #{imemoryComment} AND
+        <if test="iteacher > 0">
+            iteacher = #{iteacher}
+        </if>
+        <if test="iparent > 0">
+            iparent = #{iparent}
+        </if>
+    </delete>
 </mapper>
 
 

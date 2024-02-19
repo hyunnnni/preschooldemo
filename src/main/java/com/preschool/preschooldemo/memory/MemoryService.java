@@ -1,7 +1,9 @@
 package com.preschool.preschooldemo.memory;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
 import com.preschool.preschooldemo.common.exception.AuthErrorCode;
@@ -12,6 +14,7 @@ import com.preschool.preschooldemo.common.utils.MyFileUtils;
 
 import com.preschool.preschooldemo.common.utils.ResVo;
 import com.preschool.preschooldemo.memory.model.*;
+import com.preschool.preschooldemo.notice.model.NoticePushVo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.parameters.P;
@@ -32,6 +35,7 @@ public class MemoryService {
     private final MemoryMapper mapper;
     private final MyFileUtils myFileUtils;
     private final AuthenticationFacade authenticationFacade;
+    private final ObjectMapper objMapper;
 
     public AllMemoryVo allMemory(AllSelMemoryDto dto){
         List<String> roles = authenticationFacade.getRoles();
@@ -86,15 +90,9 @@ public class MemoryService {
     //-------------------------------- 추억 앨범 등록 --------------------------------
     public ResVo postMemory(List<MultipartFile> pics, InsMemoryDto dto){
 
-        //글등록 선생님만 제한
-        //사진 개수 체크
-        //글등록
-        //사진 등록
-        //원아는 리스트로 태그 해당 부모로 셀렉 후 글 등록
-        //푸시 기능
-
         int iuser = authenticationFacade.getLoginUserPk();
         int level = authenticationFacade.getLevelPk();
+
         if(level == Const.TEACHER || level == Const.BOSS){
             throw new RestApiException(AuthErrorCode.NOT_ENTER_ACCESS);
         }
@@ -111,20 +109,14 @@ public class MemoryService {
             throw new RestApiException(AuthErrorCode.POST_FAIL);
         }
 
-        List<Integer> iparent = mapper.selKidConnectPar(dto.getIkids());
+        InsRoomInviteProcDto pdto = InsRoomInviteProcDto.builder()
+                .imemory(dto.getImemory())
+                .ikids(dto.getIkids())
+                .build();
 
-        if (iparent.size() != Const.ZERO) {
-
-            InsRoomInviteProcDto pdto = InsRoomInviteProcDto.builder()
-                    .imemory(dto.getImemory())
-                    .iparents(iparent)
-                    .build();
-
-            int invite = mapper.insMemoryRoomInvite(pdto);
-            if (invite == Const.ZERO) {
-                throw new RestApiException(AuthErrorCode.FAIL);
-            }
-
+        int invite = mapper.insMemoryRoomInvite(pdto);
+        if (invite == Const.ZERO) {
+            throw new RestApiException(AuthErrorCode.FAIL);
         }
 
         InsMemoryPicsDto picsDto = new InsMemoryPicsDto();
@@ -141,42 +133,62 @@ public class MemoryService {
             throw new RestApiException(AuthErrorCode.PICS_FAIL);
         }
 
-       /* LocalDateTime now = LocalDateTime.now(); // 현재 날짜 구하기
+        LocalDateTime now = LocalDateTime.now(); // 현재 날짜 구하기
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // 포맷 정의
         String createdAt = now.format(formatter); // 포맷 적용
 
-        List<String> otherTokens = new ArrayList<>();
-        otherTokens = mapper.selTeaFirebaseByLoginUser(inotices);
+        List<SelMemoryOtherTokens> otherTokens = new ArrayList<>();
+        otherTokens = mapper.selParFirebaseByLoginUser(dto.getIkids());
 
-        try {
+        if (otherTokens != null) {
+            try {
 
-            otherTokens.removeAll(Collections.singletonList(null));
+                otherTokens.removeAll(Collections.singletonList(null));
+                for (SelMemoryOtherTokens token : otherTokens) {
 
-            if(otherTokens.size() != 0) {
-                NoticePushVo pushVo = new NoticePushVo();
-                pushVo.setNoticeTitle(dto.getNoticeTitle());
-                pushVo.setWriterIuser(writerIuser);
-                pushVo.setCreatedAt(createdAt);
+                    MemoryPushVo pushVo = new MemoryPushVo();
+                    pushVo.setMemoryTitle(dto.getMemoryTitle());
+                    pushVo.setWriterIuser(iuser);
+                    pushVo.setCreatedAt(createdAt);
+                    pushVo.setIkid(token.getIkid());
+                    pushVo.setKidNm(token.getKidNm());
+                    pushVo.setImemory(dto.getImemory());
 
-                String body = objMapper.writeValueAsString(pushVo);
-                log.info("body: {}", body);
-                Notification noti = Notification.builder()
-                        .setTitle("dm")
-                        .setBody(body)
-                        .build();
+                    String body = objMapper.writeValueAsString(pushVo);
+                    log.info("body: {}", body);
+                    Notification noti = Notification.builder()
+                            .setTitle("postMemory")
+                            .setBody(body)
+                            .build();
 
-                MulticastMessage message = MulticastMessage.builder()
-                        .addAllTokens(otherTokens)
-                        .setNotification(noti)
-                        .build();
+                    Message message = Message.builder()
+                            .setToken(token.getFirebaseToken())
+                            .setNotification(noti)
+                            .build();
 
-                FirebaseMessaging.getInstance().sendEachForMulticast(message);
+                    FirebaseMessaging.getInstance().sendAsync(message);
+                }
+            } catch (Exception e) {
+                throw new RestApiException(AuthErrorCode.PUSH_FAIL);
             }
-        } catch (Exception e) {
-            throw new RestApiException(AuthErrorCode.PUSH_FAIL);
-        }*/
+        }
 
         return new ResVo(dto.getImemory());
-     }
+    }
+
+    public ResVo delMemoryComment(DelMemoryCommentDto dto){
+
+        if ((dto.getIparent() == 0 && dto.getIteacher() == 0) ||
+                (dto.getIparent() > 0 && dto.getIteacher() > 0)) {
+            throw new RestApiException(AuthErrorCode.NOT_CORRECT_INFORMATION);
+        }
+
+        int result = mapper.delMemoryComment(dto);
+
+        if (result == 0) {
+            return new ResVo(Const.NO_INFORMATION);
+        }
+        return new ResVo(result);
+    }
 
 }

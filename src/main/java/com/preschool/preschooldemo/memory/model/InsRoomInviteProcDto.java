@@ -8,5 +8,5 @@ import java.util.List;
 @Builder
 public class InsRoomInviteProcDto {
     private int imemory;
-    private List<Integer> iparents;
+    private List<Integer> ikids;
 }
